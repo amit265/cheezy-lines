@@ -15,7 +15,6 @@ export default function TopicButton({ data }) {
   const { setClickCount } = useContext(adConfigContext);
   if (!data) return null;
   const { width } = Dimensions.get("screen");
-  console.log("widthDimension", width);
 
   const renderItem = ({ item }) => (
     <TouchableOpacity

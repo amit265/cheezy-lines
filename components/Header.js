@@ -26,7 +26,7 @@ export default function Header() {
       </Text>
       <View style={{display: "flex", flexDirection: "row", gap: 10}}>
         <TouchableOpacity onPress={() => router.push("/favorites")}>
-          <Ionicons name="heart" size={36} color="red" />
+          <Ionicons name="heart" size={36} color="black" />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.push("/settings")}>
           <Ionicons name="settings-outline" size={36} color="black" />

@@ -1,11 +1,74 @@
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Clipboard from "expo-clipboard";
+import React, { useContext, useEffect, useState } from "react";
+import { Pressable, Share, StyleSheet, Text, View } from "react-native";
+import { favoritesContext } from "../context/AppContext";
 
 export default function LineCard({ lines }) {
-  if (!lines) return null;
+  const [copy, setCopy] = useState(false);
+  const { favorites, setFavorites } = useContext(favoritesContext);
 
-  
+  const isFavorite = favorites.some((fav) => fav.id === lines.id);
+
+  useEffect(() => {
+    const copyTimeOut = setTimeout(() => {
+      setCopy(false);
+    }, 1000);
+
+    return () => clearTimeout(copyTimeOut);
+  }, [copy]);
+
+  const FAVORITES_KEY = "FAVORITE_LINES";
+
+  const addFavorite = async () => {
+    try {
+      const isAlreadyFavorite = favorites.some((fav) => fav.id === lines.id);
+      let updatedFavorites;
+
+      if (isAlreadyFavorite) {
+        // Remove from favorites
+        updatedFavorites = favorites.filter((fav) => fav.id !== lines.id);
+      } else {
+        // Add to favorites
+        updatedFavorites = [...favorites, lines];
+      }
+
+      setFavorites(updatedFavorites);
+      await AsyncStorage.setItem(
+        FAVORITES_KEY,
+        JSON.stringify(updatedFavorites)
+      );
+    } catch (err) {
+      console.error("Failed to update favorites in AsyncStorage:", err);
+    }
+  };
+
+  const handleCopy = async () => {
+    try {
+      setCopy(true);
+      await Clipboard.setStringAsync(lines?.text);
+    } catch (err) {
+      console.error("Copy failed", err);
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      const result = await Share.share({
+        message: lines?.text,
+      });
+
+      if (result.action === Share.sharedAction) {
+        console.log("App shared!");
+      } else if (result.action === Share.dismissedAction) {
+        console.log("Share dismissed.");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+  if (!lines) return null;
 
   return (
     <View style={styles.card}>
@@ -16,9 +79,15 @@ export default function LineCard({ lines }) {
       </View>
 
       <View style={styles.buttonRow}>
-        <IconButton icon="heart-outline" onPress={() => {}} />
-        <IconButton icon="copy-outline" onPress={() => {}} />
-        <IconButton icon="send-o" onPress={() => {}} />
+        <IconButton
+          icon={isFavorite ? "heart" : "heart-outline"}
+          onPress={addFavorite}
+        />
+        <IconButton
+          icon={copy ? "copy" : "copy-outline"}
+          onPress={handleCopy}
+        />
+        <IconButton icon="send-o" onPress={handleShare} />
       </View>
     </View>
   );

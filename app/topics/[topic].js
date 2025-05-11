@@ -5,12 +5,12 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LineCard from "../../components/LineCard";
 import colors from "../../constants/colors";
+import { BannerAdComponent } from "../../services/AdManager";
 export default function Topic() {
   const { dataParams } = useLocalSearchParams();
   const router = useRouter();
   const data = JSON.parse(dataParams);
   const lines = data?.lines;
-  console.log("data from selected topic dfd", data);
 
   const renderItem = ({ item }) => (
     <View>
@@ -32,6 +32,9 @@ export default function Topic() {
         renderItem={renderItem}
         keyExtractor={(item, index) => `${item?.id}-${index}`}
       />
+      <View style={styles.bannerContainer}>
+        <BannerAdComponent />
+      </View>
     </SafeAreaView>
   );
 }
@@ -40,7 +43,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.BACKGROUND,
-    alignItems: "center"
+    alignItems: "center",
+    paddingBottom: 40
   },
   headerContainer: {
     paddingVertical: 10,

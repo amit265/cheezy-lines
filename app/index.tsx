@@ -1,5 +1,5 @@
 import colors from "@/constants/colors";
-import { adConfigContext, dataContext } from "@/context/AppContext";
+import { adConfigContext, dataContext, favoritesContext } from "@/context/AppContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SplashScreen } from "expo-router";
 import { collection, doc, getDocs, onSnapshot } from "firebase/firestore";
@@ -9,14 +9,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../components/Header";
 import SplashScreenComponent from "../components/SplashScreenComponent";
 import TopicButton from "../components/TopicButton";
-import { BannerAdComponent } from "../services/AdManager";
+import { BannerAdComponent, showInterstitialAd } from "../services/AdManager";
 import { db } from "../services/firebaseConfig";
 import { syncDataWithFirebase } from "../services/syncDataWithFirebase";
 export default function Index() {
   const [showSplash, setShowSplash] = useState(true);
-  const { adConfig, setAdConfig } = useContext(adConfigContext);
+  const { adConfig, setAdConfig, clickCount } = useContext(adConfigContext);
   const { data, setData } = useContext(dataContext);
-
+  const { favorites, setFavorites } = useContext(favoritesContext)
   useEffect(() => {
     const loadAndSyncData = async () => {
       try {
@@ -95,6 +95,32 @@ export default function Index() {
     };
   }, []);
 
+  // console.log("clickCOiunt", clickCount)
+  
+
+  useEffect(() => {
+    const loadFavorites = async () => {
+      try {
+        const storedFavorites = await AsyncStorage.getItem("FAVORITE_LINES");
+        if (storedFavorites) {
+          setFavorites(JSON.parse(storedFavorites));
+        }
+      } catch (err) {
+        console.error("Failed to load favorites from AsyncStorage:", err);
+      }
+    };
+
+    loadFavorites();
+  }, []);
+
+  useEffect(() => {
+    if (clickCount % adConfig?.interstitialFrequency === 0) {
+      showInterstitialAd(adConfig);
+    }
+  }, [clickCount, adConfig]);
+
+
+
 
   if (showSplash) {
     return <SplashScreenComponent />;
@@ -106,7 +132,7 @@ export default function Index() {
       <View style={styles.headerContainer}>
         <Header />
       </View>
-    
+
 
       {/* Main Content */}
       <View style={styles.content}>
