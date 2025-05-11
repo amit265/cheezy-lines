@@ -17,6 +17,7 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
     "Poppins-Bold": require("../assets/fonts/Poppins-Bold.ttf"),
+    "Baloo2": require("../assets/fonts/Baloo2-SemiBold.ttf")
   });
 
 
