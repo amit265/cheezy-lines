@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "cheezy-lines",
+    "name": "Cheezy Lines: So Bad, It Works",
     "slug": "cheezy-lines",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,9 +14,10 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#fde8aa"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.mindcraftlearning.cheezylines"
     },
     "web": {
       "bundler": "metro",
@@ -31,12 +32,36 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#fde8aa"
+        }
+      ],
+      "expo-font",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-7433519007687449~8014152542",
+          "iosAppId": ""
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "minSdkVersion": 24,
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "enableHermes": true
+          }
         }
       ]
+
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "owner": "mindcraftlearning",
+
   }
 }
