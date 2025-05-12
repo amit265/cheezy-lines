@@ -15,16 +15,16 @@ const getAdUnitId = (type, testAds) => {
   const adUnitIds = {
     banner: testAds
       ? TestIds.ADAPTIVE_BANNER
-      : "ca-app-pub-7433519007687449/4304881948",
+      : "ca-app-pub-7433519007687449/8440687637",
     interstitial: testAds
       ? TestIds.INTERSTITIAL
-      : "ca-app-pub-7433519007687449/2976306640",
+      : "ca-app-pub-7433519007687449/9290734877",
     appOpen: testAds
       ? TestIds.APP_OPEN
-      : "ca-app-pub-7433519007687449/1678718605",
+      : "ca-app-pub-7433519007687449/2418512250",
     nativeAdvanced: testAds
       ? TestIds.NATIVE
-      : "ca-app-pub-7433519007687449/3760272250",
+      : "ca-app-pub-7433519007687449/2204250645",
   };
   return adUnitIds[type];
 };

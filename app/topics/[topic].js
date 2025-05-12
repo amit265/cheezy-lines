@@ -1,13 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
+import React, { useContext } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LineCard from "../../components/LineCard";
 import colors from "../../constants/colors";
 import { BannerAdComponent } from "../../services/AdManager";
+import { adConfigContext } from "../../context/AppContext";
 export default function Topic() {
   const { dataParams } = useLocalSearchParams();
+  const{adConfig} = useContext(adConfigContext);
   const router = useRouter();
   const data = JSON.parse(dataParams);
   const lines = data?.lines;
@@ -32,9 +34,8 @@ export default function Topic() {
         renderItem={renderItem}
         keyExtractor={(item, index) => `${item?.id}-${index}`}
       />
-      <View style={styles.bannerContainer}>
-        <BannerAdComponent />
-      </View>
+        {adConfig?.showBannerAds && <BannerAdComponent />}
+     
     </SafeAreaView>
   );
 }
@@ -44,7 +45,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.BACKGROUND,
     alignItems: "center",
-    paddingBottom: 40
   },
   headerContainer: {
     paddingVertical: 10,
@@ -66,14 +66,5 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-Bold",
     textAlign: "left",
   },
-  bannerContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingBottom: 4,
-    backgroundColor: colors.BACKGROUND,
-  },
+
 });

@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SplashScreen } from "expo-router";
 import { collection, doc, getDocs, onSnapshot } from "firebase/firestore";
 import { useContext, useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "../components/Header";
 import SplashScreenComponent from "../components/SplashScreenComponent";
@@ -17,6 +17,7 @@ export default function Index() {
   const { adConfig, setAdConfig, clickCount } = useContext(adConfigContext);
   const { data, setData } = useContext(dataContext);
   const { favorites, setFavorites } = useContext(favoritesContext)
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const loadAndSyncData = async () => {
       try {
@@ -36,7 +37,7 @@ export default function Index() {
           await AsyncStorage.setItem("cheezyLines", JSON.stringify(fetchedData));
           setData(fetchedData);
         }
-
+        setLoading(false);
         // Sync in background
         syncDataWithFirebase();
       } catch (error) {
@@ -50,7 +51,7 @@ export default function Index() {
   useEffect(() => {
     async function prepare() {
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 100));
       } catch (e) {
         console.warn(e);
       } finally {
@@ -62,7 +63,7 @@ export default function Index() {
 
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 1000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -96,7 +97,7 @@ export default function Index() {
   }, []);
 
   // console.log("clickCOiunt", clickCount)
-  
+
 
   useEffect(() => {
     const loadFavorites = async () => {
@@ -137,13 +138,15 @@ export default function Index() {
       {/* Main Content */}
       <View style={styles.content}>
         {/* Your main content here */}
-        <TopicButton data={data} />
+        {loading ? <ActivityIndicator
+          size={"large"}
+          color={"#000"}
+          style={{ padding: 26 }}
+        /> : <TopicButton data={data} />}
       </View>
 
       {/* Bottom Banner Ad */}
-      <View style={styles.bannerContainer}>
-        <BannerAdComponent />
-      </View>
+      {adConfig?.showBannerAds && <BannerAdComponent />}
     </SafeAreaView>
   );
 }
@@ -164,14 +167,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  bannerContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingBottom: 4,
-    backgroundColor: colors.BACKGROUND,
-  },
+
 });
