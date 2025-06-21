@@ -48,12 +48,13 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     paddingVertical: 10,
-    backgroundColor: colors.BACKGROUND,
     display: "flex",
     flexDirection: "row",
     gap: 15,
     width: "90%",
     borderBottomWidth: 1,
+    alignItems: "center",
+
   },
   content: {
     flex: 1,

@@ -2,29 +2,31 @@
   "expo": {
     "name": "Cheezy Lines: So Bad, It Works",
     "slug": "cheezy-lines",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "cheezylines",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mindcraftlearning.cheezylines"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#fde8aa"
+        "backgroundColor": "#fde8aa",
+        
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.mindcraftlearning.cheezylines"
+      "package": "com.mindcraftlearning.cheezylines",
+      "versionCode": 3
+
     },
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png",
-      "versionCode": 3
-
     },
     "plugins": [
       "expo-router",

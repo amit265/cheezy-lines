@@ -123,10 +123,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   text: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#000",
     textAlign: "center",
     fontFamily: "Poppins-Regular",
+    paddingHorizontal: 20
   },
   buttonRow: {
     flexDirection: "row",

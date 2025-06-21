@@ -39,6 +39,7 @@ export default function TopicButton({ data }) {
         data={data}
         renderItem={renderItem}
         keyExtractor={(item, index) => `${item?.id}-${index}`}
+        showsVerticalScrollIndicator = {false}
       />
     </View>
   );
