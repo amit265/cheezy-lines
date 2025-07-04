@@ -33,7 +33,6 @@ export default function Index() {
         </Pressable>
         <Text style={styles.headerText}>Favorites</Text>
       </View>
-
       {favorites?.length === 0 ? (
         <TouchableOpacity
           style={{

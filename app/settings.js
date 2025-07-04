@@ -10,7 +10,6 @@ import {
   Alert,
   Linking,
   Share,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -18,7 +17,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import colors from "../constants/colors";
 import { BannerAdComponent } from "../services/AdManager";
-import {uploadTopics} from "../services/uploadToFirebase";
 export default function Settings() {
   const router = useRouter();
 
@@ -61,6 +59,9 @@ export default function Settings() {
         backgroundColor: colors.BACKGROUND,
       }}
     >
+      <View>
+        <BannerAdComponent />
+      </View>
       <Text
         style={{
           fontSize: 25,
@@ -212,43 +213,6 @@ export default function Settings() {
       >
         <Feather name="x-circle" size={50} color="black" />
       </TouchableOpacity>
-
-      {/* Bottom Banner Ad */}
-      <View style={styles.bannerContainer}>
-        <BannerAdComponent />
-      </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.BACKGROUND,
-  },
-  headerContainer: {
-    paddingTop: 10, // For status bar spacing, adjust as needed
-    paddingBottom: 10,
-    backgroundColor: colors.BACKGROUND,
-    alignItems: "center",
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  text: {
-    fontSize: 18,
-    color: "white",
-  },
-  bannerContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingBottom: 4,
-    backgroundColor: colors.BACKGROUND, // Optional: to avoid transparency glitches
-  },
-});
