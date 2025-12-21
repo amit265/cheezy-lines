@@ -23,16 +23,16 @@ export const syncDataWithFirebase = () => {
 
         if (hasChanged) {
           await AsyncStorage.setItem("cheezyLines", JSON.stringify(data));
-          console.log("🔥 Firebase updated, synced with AsyncStorage");
+          // console.log("🔥 Firebase updated, synced with AsyncStorage");
         } else {
-          console.log("✅ Firebase updated, but no data change");
+          // console.log("✅ Firebase updated, but no data change");
         }
       } catch (error) {
-        console.error("❌ Error syncing with Firebase:", error);
+        // console.error("❌ Error syncing with Firebase:", error);
       }
     },
     (error) => {
-      console.error("❌ Snapshot listener error:", error);
+      // console.error("❌ Snapshot listener error:", error);
     }
   );
 

@@ -50,7 +50,7 @@ export default function RootLayout() {
       const { isConnected } = await Network.getNetworkStateAsync();
       setIsConnected(isConnected);
     } catch (error) {
-      console.error('Error checking network status:', error);
+      // console.error('Error checking network status:', error);
     }
   }, []);
 
@@ -73,10 +73,10 @@ export default function RootLayout() {
     MobileAds()
       .initialize()
       .then(adapterStatuses => {
-        console.log('Mobile Ads Initialized');
+        // console.log('Mobile Ads Initialized');
       })
       .catch(error => {
-        console.error("Mobile Ads Init Error:", error);
+        // console.error("Mobile Ads Init Error:", error);
       });
 
 
@@ -97,7 +97,7 @@ export default function RootLayout() {
 
 
   if (!fontsLoaded) {
-    console.log("font laoded");
+    // console.log("font laoded");
 
     return null; // Or a loading spinner
   }
@@ -108,8 +108,8 @@ export default function RootLayout() {
     <ErrorBoundary
       FallbackComponent={ErrorFallBack}
       onError={(error, info) => {
-        console.log('Global Error:', error);
-        console.log('Component Stack:', info.componentStack);
+        // console.log('Global Error:', error);
+        // console.log('Component Stack:', info.componentStack);
         // Log the error to an external service like Sentry or Firebase
       }}
     >

@@ -46,7 +46,7 @@ const AdManager = () => {
         // ✅ Increment pause count
         appPauseCount.current += 1;
 
-        console.log(`App Resume Count: ${appPauseCount.current}`);
+        // console.log(`App Resume Count: ${appPauseCount.current}`);
 
         // ✅ Show AppOpenAd every second pause
         if (
@@ -54,7 +54,7 @@ const AdManager = () => {
           adConfig.showAppOpenAds &&
           appOpenAd?.loaded
         ) {
-          console.log("Showing App Open Ad");
+          // console.log("Showing App Open Ad");
           appOpenAd.show();
         }
       }
@@ -76,7 +76,7 @@ const AdManager = () => {
   const loadAds = (config) => {
     if (isRewardedAdLoading) return;
 
-    console.log("Loading Ads with config:", config);
+    // console.log("Loading Ads with config:", config);
 
     isRewardedAdLoading = true;
     setTimeout(() => (isRewardedAdLoading = false), 5000);
@@ -120,7 +120,7 @@ export const showInterstitialAd = (adConfig) => {
     interstitialAd.show();
     interstitialAd.load();
   } else {
-    console.log("Interstitial Ad not ready");
+    // console.log("Interstitial Ad not ready");
     interstitialAd.load();
   }
 };

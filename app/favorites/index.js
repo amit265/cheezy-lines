@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useContext } from "react";
+import { useContext, useRef } from "react";
 import {
   FlatList,
   Pressable,
@@ -16,8 +16,9 @@ import { favoritesContext } from "../../context/AppContext";
 import { BannerAdComponent } from "../../services/AdManager";
 
 export default function Index() {
+
   const router = useRouter();
-  const { favorites, setFavorites } = useContext(favoritesContext);
+  const { favorites } = useContext(favoritesContext);
 
   const renderItem = ({ item }) => (
     <View>

@@ -1,13 +1,27 @@
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
-import React, { useContext, useEffect, useState } from "react";
-import { Pressable, Share, StyleSheet, Text, View } from "react-native";
+import * as Sharing from "expo-sharing";
+import { useContext, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { captureRef } from "react-native-view-shot";
 import { favoritesContext } from "../context/AppContext";
+import ShareCard from "./ShareCard";
 
 export default function LineCard({ lines }) {
   const [copy, setCopy] = useState(false);
   const { favorites, setFavorites } = useContext(favoritesContext);
+  const shareCardRef = useRef();
+  const [isSharing, setIsSharing] = useState(false);
 
   const isFavorite = favorites.some((fav) => fav.id === lines.id);
 
@@ -18,6 +32,40 @@ export default function LineCard({ lines }) {
 
     return () => clearTimeout(copyTimeOut);
   }, [copy]);
+
+  const shareImage = async () => {
+    if (isSharing) return;
+    setIsSharing(true);
+    try {
+      // A. Capture the hidden view as an image
+      await Clipboard.setStringAsync(lines?.text);
+      setTimeout(async () => {
+        try {
+          const uri = await captureRef(shareCardRef, {
+            format: "png",
+            quality: 1.0, // Best quality
+            result: "tmpfile",
+          });
+
+          // B. Share using native dialog
+          await Sharing.shareAsync(uri, {
+            mimeType: "image/png",
+            dialogTitle: "Share your cheesy line!",
+            UTI: "public.png", // Helps on iOS
+            // message: `${shareMessage}\n\nGet more cheesy lines here: ${playstoreLink}`,
+          });
+        } catch (error) {
+          // console.error("Error during sharing process", error);
+        } finally {
+          setIsSharing(false);
+        }
+      }, 150);
+    } catch (error) {
+      // console.error("Sharing failed", error);
+      setIsSharing(false);
+      Alert.alert("Oops", "Could not share the image.");
+    }
+  };
 
   const FAVORITES_KEY = "FAVORITE_LINES";
 
@@ -40,7 +88,7 @@ export default function LineCard({ lines }) {
         JSON.stringify(updatedFavorites)
       );
     } catch (err) {
-      console.error("Failed to update favorites in AsyncStorage:", err);
+      // console.error("Failed to update favorites in AsyncStorage:", err);
     }
   };
 
@@ -49,7 +97,7 @@ export default function LineCard({ lines }) {
       setCopy(true);
       await Clipboard.setStringAsync(lines?.text);
     } catch (err) {
-      console.error("Copy failed", err);
+      // console.error("Copy failed", err);
     }
   };
 
@@ -60,18 +108,20 @@ export default function LineCard({ lines }) {
       });
 
       if (result.action === Share.sharedAction) {
-        console.log("App shared!");
+        // console.log("App shared!");
       } else if (result.action === Share.dismissedAction) {
-        console.log("Share dismissed.");
+        // console.log("Share dismissed.");
       }
     } catch (error) {
-      console.log(error.message);
+      // console.log(error.message);
     }
   };
   if (!lines) return null;
 
   return (
     <View style={styles.card}>
+      <ShareCard ref={shareCardRef} text={lines?.text} />
+
       <View style={styles.textContainer}>
         <Text style={styles.leftComma}>❝</Text>
         <Text style={styles.text}>{lines.text}</Text>
@@ -80,14 +130,19 @@ export default function LineCard({ lines }) {
 
       <View style={styles.buttonRow}>
         <IconButton
-          icon={isFavorite ? "heart" : "heart-outline"}
+          icon={isFavorite ? "close" : "heart-outline"}
           onPress={addFavorite}
         />
         <IconButton
           icon={copy ? "copy" : "copy-outline"}
           onPress={handleCopy}
         />
-        <IconButton icon="send-o" onPress={handleShare} />
+       
+          {isSharing ? (
+            <ActivityIndicator size="small" color="#000" />
+          ) : (
+            <IconButton icon="send-o" onPress={shareImage} />
+          )}
       </View>
     </View>
   );
@@ -127,16 +182,18 @@ const styles = StyleSheet.create({
     color: "#000",
     textAlign: "center",
     fontFamily: "Poppins-Regular",
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
   },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-evenly",
-    paddingBottom: 20,
+      alignContent: "center",
     marginTop: -30,
+    marginBottom: 20,
   },
   iconButton: {
     padding: 8,
+   
   },
   leftComma: {
     fontSize: 30,
@@ -150,4 +207,14 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-Regular",
     textAlign: "right",
   },
+   button: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 5,
+    zIndex: 1,
+  },
+
 });

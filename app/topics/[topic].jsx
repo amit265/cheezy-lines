@@ -7,12 +7,15 @@ import LineCard from "../../components/LineCard";
 import colors from "../../constants/colors";
 import { BannerAdComponent } from "../../services/AdManager";
 import { adConfigContext } from "../../context/AppContext";
+import SwipeDeck from "../../components/SwipeDeck";
 export default function Topic() {
   const { dataParams } = useLocalSearchParams();
   const{adConfig} = useContext(adConfigContext);
   const router = useRouter();
   const data = JSON.parse(dataParams);
   const lines = data?.lines;
+
+  // console.log("Topic Data:", data);
 
   const renderItem = ({ item }) => (
     <View>
@@ -29,11 +32,14 @@ export default function Topic() {
         <Text style={styles.headerText}>{data?.title}</Text>
       </View>
 
-      <FlatList
+      {/* <FlatList
         data={lines}
         renderItem={renderItem}
         keyExtractor={(item, index) => `${item?.id}-${index}`}
-      />
+      /> */}
+      <View style={styles.content}>
+       <SwipeDeck card = {lines}/>
+      </View>
         {adConfig?.showBannerAds && <BannerAdComponent />}
      
     </SafeAreaView>
@@ -45,6 +51,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.BACKGROUND,
     alignItems: "center",
+
   },
   headerContainer: {
     paddingVertical: 10,
@@ -58,8 +65,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    width: "100%",
+    backgroundColor: colors.BACKGROUND,
     justifyContent: "center",
-    alignItems: "center",
+
+ 
   },
   headerText: {
     color: "#000",

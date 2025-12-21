@@ -21,7 +21,6 @@ export default function Settings() {
   const router = useRouter();
 
   const handleContactUs = () => {
-    console.log("contact us called");
 
     const email = "mindcraftlearning97@gmail.com";
     const subject = "Support Request for Cheesy Lines";
@@ -42,12 +41,12 @@ export default function Settings() {
       });
 
       if (result.action === Share.sharedAction) {
-        console.log("App shared!");
+        // console.log("App shared!");
       } else if (result.action === Share.dismissedAction) {
-        console.log("Share dismissed.");
+        // console.log("Share dismissed.");
       }
     } catch (error) {
-      console.log(error.message);
+      // console.log(error.message);
     }
   };
 

@@ -2,7 +2,6 @@ import { doc, setDoc } from "firebase/firestore";
 import { sampleTopics } from "../constants/topics";
 import { db } from "./firebaseConfig";
 export async function uploadTopics() {
-  console.log("upload clicked");
 
   for (const topic of sampleTopics) {
     const topicRef = doc(db, "cheezy-lines", topic.title.toLowerCase());
@@ -15,5 +14,5 @@ export async function uploadTopics() {
     });
   }
 
-  console.log("Upload complete");
+  // console.log("Upload complete");
 }

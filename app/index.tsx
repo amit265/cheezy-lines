@@ -31,7 +31,7 @@ export default function Index() {
           // Fetch from Firebase only if not cached
           const querySnapshot = await getDocs(collection(db, "cheezy-lines"));
           const fetchedData = querySnapshot.docs.map(doc => doc.data());
-          console.log("🔥 Data from Firebase:", fetchedData);
+          // console.log("🔥 Data from Firebase:", fetchedData);
 
           // Save and set
           await AsyncStorage.setItem("cheezyLines", JSON.stringify(fetchedData));
@@ -41,7 +41,7 @@ export default function Index() {
         // Sync in background
         syncDataWithFirebase();
       } catch (error) {
-        console.error("❌ Load + Sync error:", error);
+        // console.error("❌ Load + Sync error:", error);
       }
     };
 
@@ -81,11 +81,11 @@ export default function Index() {
             }
           },
           (error) => {
-            console.log('Error fetching ad settings:', error);
+            // console.log('Error fetching ad settings:', error);
           }
         );
       } catch (error) {
-        console.log('Error setting up snapshot:', error);
+        // console.log('Error setting up snapshot:', error);
       }
     };
 
@@ -107,7 +107,7 @@ export default function Index() {
           setFavorites(JSON.parse(storedFavorites));
         }
       } catch (err) {
-        console.error("Failed to load favorites from AsyncStorage:", err);
+        // console.error("Failed to load favorites from AsyncStorage:", err);
       }
     };
 
