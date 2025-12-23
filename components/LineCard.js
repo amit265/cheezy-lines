@@ -6,22 +6,60 @@ import { useContext, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Animated, // Import Animated
   Pressable,
   Share,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { captureRef } from "react-native-view-shot";
 import { favoritesContext } from "../context/AppContext";
 import ShareCard from "./ShareCard";
 
+// --- SUB-COMPONENT: Bouncy Icon Button ---
+const BouncyIconButton = ({ icon, onPress, library = "Ionicons", color = "#000" }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.8, // Shrink
+      speed: 20,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1, // Bounce back
+      friction: 4,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+    if (onPress) onPress();
+  };
+
+  return (
+    <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut} style={styles.iconButton}>
+      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+        {library === "FontAwesome" ? (
+          <FontAwesome name={icon} size={26} color={color} />
+        ) : (
+          <Ionicons name={icon} size={26} color={color} />
+        )}
+      </Animated.View>
+    </Pressable>
+  );
+};
+
 export default function LineCard({ lines }) {
   const [copy, setCopy] = useState(false);
   const { favorites, setFavorites } = useContext(favoritesContext);
   const shareCardRef = useRef();
   const [isSharing, setIsSharing] = useState(false);
+
+  // --- ANIMATION REFS ---
+  const heartScale = useRef(new Animated.Value(1)).current;
 
   const isFavorite = favorites.some((fav) => fav.id === lines.id);
 
@@ -33,35 +71,32 @@ export default function LineCard({ lines }) {
     return () => clearTimeout(copyTimeOut);
   }, [copy]);
 
+  // --- SHARE LOGIC ---
   const shareImage = async () => {
     if (isSharing) return;
     setIsSharing(true);
     try {
-      // A. Capture the hidden view as an image
       await Clipboard.setStringAsync(lines?.text);
       setTimeout(async () => {
         try {
           const uri = await captureRef(shareCardRef, {
             format: "png",
-            quality: 1.0, // Best quality
+            quality: 1.0,
             result: "tmpfile",
           });
 
-          // B. Share using native dialog
           await Sharing.shareAsync(uri, {
             mimeType: "image/png",
             dialogTitle: "Share your cheesy line!",
-            UTI: "public.png", // Helps on iOS
-            // message: `${shareMessage}\n\nGet more cheesy lines here: ${playstoreLink}`,
+            UTI: "public.png",
           });
         } catch (error) {
-          // console.error("Error during sharing process", error);
+          // console.error("Error sharing", error);
         } finally {
           setIsSharing(false);
         }
       }, 150);
     } catch (error) {
-      // console.error("Sharing failed", error);
       setIsSharing(false);
       Alert.alert("Oops", "Could not share the image.");
     }
@@ -70,15 +105,20 @@ export default function LineCard({ lines }) {
   const FAVORITES_KEY = "FAVORITE_LINES";
 
   const addFavorite = async () => {
+    // 1. Animate the heart pop manually before processing state
+    Animated.sequence([
+      Animated.timing(heartScale, { toValue: 1.3, duration: 100, useNativeDriver: true }),
+      Animated.spring(heartScale, { toValue: 1, friction: 4, useNativeDriver: true }),
+    ]).start();
+
+    // 2. Logic
     try {
       const isAlreadyFavorite = favorites.some((fav) => fav.id === lines.id);
       let updatedFavorites;
 
       if (isAlreadyFavorite) {
-        // Remove from favorites
         updatedFavorites = favorites.filter((fav) => fav.id !== lines.id);
       } else {
-        // Add to favorites
         updatedFavorites = [...favorites, lines];
       }
 
@@ -88,7 +128,7 @@ export default function LineCard({ lines }) {
         JSON.stringify(updatedFavorites)
       );
     } catch (err) {
-      // console.error("Failed to update favorites in AsyncStorage:", err);
+      // console.error("Failed to update favorites", err);
     }
   };
 
@@ -101,21 +141,6 @@ export default function LineCard({ lines }) {
     }
   };
 
-  const handleShare = async () => {
-    try {
-      const result = await Share.share({
-        message: lines?.text,
-      });
-
-      if (result.action === Share.sharedAction) {
-        // console.log("App shared!");
-      } else if (result.action === Share.dismissedAction) {
-        // console.log("Share dismissed.");
-      }
-    } catch (error) {
-      // console.log(error.message);
-    }
-  };
   if (!lines) return null;
 
   return (
@@ -129,34 +154,36 @@ export default function LineCard({ lines }) {
       </View>
 
       <View style={styles.buttonRow}>
-        <IconButton
-          icon={isFavorite ? "close" : "heart-outline"}
-          onPress={addFavorite}
-        />
-        <IconButton
-          icon={copy ? "copy" : "copy-outline"}
+        {/* Favorite Button with Special Pop Animation Wrapper */}
+        <Animated.View style={{ transform: [{ scale: heartScale }] }}>
+           <BouncyIconButton
+            icon={isFavorite ? "close" : "heart-outline"} // Keeping your logic (close if favorite)
+            color={isFavorite ? "#E53935" : "#000"} // Added Red color if it's a remove action
+            onPress={addFavorite}
+          />
+        </Animated.View>
+
+        {/* Copy Button */}
+        <BouncyIconButton
+          icon={copy ? "checkmark-circle" : "copy-outline"} // Changed "copy" to checkmark for better feedback
+          color={copy ? "#4CAF50" : "#000"} // Green when copied
           onPress={handleCopy}
         />
        
-          {isSharing ? (
-            <ActivityIndicator size="small" color="#000" />
-          ) : (
-            <IconButton icon="send-o" onPress={shareImage} />
-          )}
+        {/* Share Button */}
+        {isSharing ? (
+          <View style={styles.loaderContainer}>
+             <ActivityIndicator size="small" color="#000" />
+          </View>
+        ) : (
+          <BouncyIconButton 
+            icon="send-o" 
+            library="FontAwesome" 
+            onPress={shareImage} 
+          />
+        )}
       </View>
     </View>
-  );
-}
-
-function IconButton({ icon, onPress }) {
-  return (
-    <Pressable onPress={onPress} style={styles.iconButton}>
-      {icon === "send-o" ? (
-        <FontAwesome name={icon} size={26} color="#000" />
-      ) : (
-        <Ionicons name={icon} size={26} color="#000" />
-      )}
-    </Pressable>
   );
 }
 
@@ -166,9 +193,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 26,
     overflow: "hidden",
-    elevation: 1,
+    elevation: 4, // Increased slightly for better depth
     shadowColor: "#000",
-    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
     shadowRadius: 6,
   },
   textContainer: {
@@ -178,43 +206,42 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   text: {
-    fontSize: 16,
+    fontSize: 18, // Increased slightly for readability
     color: "#000",
     textAlign: "center",
     fontFamily: "Poppins-Regular",
     paddingHorizontal: 20,
+    lineHeight: 28, // Better line height
   },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-evenly",
-      alignContent: "center",
+    alignItems: "center", // Fixed alignContent -> alignItems
     marginTop: -30,
     marginBottom: 20,
   },
   iconButton: {
-    padding: 8,
-   
+    padding: 10, // Increased padding for easier tapping
+    borderRadius: 20,
+    backgroundColor: "#f5f5f5", // Subtle background for buttons
+  },
+  loaderContainer: {
+    padding: 10,
+    borderRadius: 20,
+    backgroundColor: "#f5f5f5",
   },
   leftComma: {
-    fontSize: 30,
-    color: "#000",
+    fontSize: 40, // Made quotes larger
+    color: "#DDD", // Made quotes lighter
     fontFamily: "Poppins-Regular",
     textAlign: "left",
+    marginLeft: 10,
   },
   rightComma: {
-    fontSize: 30,
-    color: "#000",
+    fontSize: 40,
+    color: "#DDD",
     fontFamily: "Poppins-Regular",
     textAlign: "right",
+    marginRight: 10,
   },
-   button: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 5,
-    zIndex: 1,
-  },
-
 });

@@ -1,11 +1,13 @@
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Make sure to install this
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import * as Clipboard from "expo-clipboard"; // <--- Import this
+import * as Clipboard from "expo-clipboard";
 import * as Sharing from "expo-sharing";
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Animated, // Import Animated
+  Pressable, // Import Pressable for better touch handling
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -18,6 +20,43 @@ import { shareCaptions } from "../constants/constant";
 import { favoritesContext } from "../context/AppContext";
 import { shuffleArray } from "../utils/shuffleQuestion";
 import ShareCard from "./ShareCard";
+
+// --- SUB-COMPONENT: Reusable Bouncy Button ---
+const BouncyButton = ({ onPress, style, children, disabled }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.8, // Shrink effect
+      speed: 20,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1, // Bounce back
+      friction: 4,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+    if (onPress) onPress();
+  };
+
+  return (
+    <Pressable
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      disabled={disabled}
+      style={{ zIndex: 10 }} // Ensure touches register
+    >
+      <Animated.View style={[style, { transform: [{ scale: scaleAnim }] }]}>
+        {children}
+      </Animated.View>
+    </Pressable>
+  );
+};
+
 export default function SwipeDeck({ card }) {
   const swiperRef = useRef(null);
   const navigation = useNavigation();
@@ -26,160 +65,191 @@ export default function SwipeDeck({ card }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
   const [currentCardText, setCurrentCardText] = useState(card[0]?.text || "");
-  // State to track if the deck is finished
   const [isEndOfDeck, setIsEndOfDeck] = useState(false);
-  // State to force a full reset of the component (the "Restart" trick)
   const [deckKey, setDeckKey] = useState(0);
   const playstoreLink = "https://bit.ly/question-games";
   const shareMessage = shuffleArray(shareCaptions);
 
+  // --- ANIMATION REFS ---
+  const deckOpacity = useRef(new Animated.Value(0)).current;
+  const deckSlide = useRef(new Animated.Value(50)).current; // Starts 50px lower
+  const finishedOpacity = useRef(new Animated.Value(0)).current;
 
-//   console.log("SwipeDeck Rendered with cards:", card.length);
-  // --- THE MAGIC SHARE FUNCTION ---
+  // --- EFFECT: Animate Deck Entrance ---
+  useEffect(() => {
+    // Reset values first
+    deckOpacity.setValue(0);
+    deckSlide.setValue(50);
+
+    // Play Animation
+    Animated.parallel([
+      Animated.timing(deckOpacity, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.spring(deckSlide, {
+        toValue: 0,
+        friction: 6,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [deckKey]); // Re-run when deck restarts
+
+  // --- EFFECT: Animate Finished Screen ---
+  useEffect(() => {
+    if (isEndOfDeck) {
+      Animated.timing(finishedOpacity, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isEndOfDeck]);
+
+  // --- SHARE FUNCTION ---
   const shareImage = async () => {
     if (isSharing) return;
     setIsSharing(true);
     const captionText = `${currentCardText}\n\nGet more Cheesy Lines: https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines`;
     try {
-      // A. Capture the hidden view as an image
       await Clipboard.setStringAsync(captionText);
       setTimeout(async () => {
         try {
           const uri = await captureRef(shareCardRef, {
             format: "png",
-            quality: 1.0, // Best quality
+            quality: 1.0,
             result: "tmpfile",
           });
-
-          // B. Share using native dialog
           await Sharing.shareAsync(uri, {
             mimeType: "image/png",
             dialogTitle: "Share your cheesy line!",
-            UTI: "public.png", // Helps on iOS
-            // message: `${shareMessage}\n\nGet more cheesy lines here: ${playstoreLink}`,
+            UTI: "public.png",
           });
         } catch (error) {
-        //   console.error("Error during sharing process", error);
+          // console.error("Error", error);
         } finally {
           setIsSharing(false);
         }
       }, 150);
     } catch (error) {
-    //   console.error("Sharing failed", error);
       setIsSharing(false);
       Alert.alert("Oops", "Could not share the image.");
     }
   };
 
-  // Update current text whenever user swipes so we share the RIGHT card
   const handleCardIndexChange = (index) => {
-    // Safety check if we run out of cards
     setCurrentIndex(index);
     if (card[index]) {
       setCurrentCardText(card[index].text);
     }
   };
 
-  // --- SAVE LOGIC ---
   const saveToFavorites = async (cardItem) => {
     try {
-      // 1. Get existing favorites
       const existingData = await AsyncStorage.getItem("favorites");
       let favorites = existingData ? JSON.parse(existingData) : [];
-
-      // 2. Check for duplicates (optional, prevents saving same line twice)
       const isDuplicate = favorites.some((fav) => fav.text === cardItem.text);
 
       if (!isDuplicate) {
-        // 3. Add new card and save
         favorites.push(cardItem);
         await AsyncStorage.setItem("favorites", JSON.stringify(favorites));
-        setFavorites(favorites); // Update context
-        // console.log("Saved to favorites:", cardItem.text);
-      } else {
-        // console.log("Already in favorites");
+        setFavorites(favorites);
       }
-    } catch (error) {
-    //   console.error("Error saving favorite:", error);
-    }
+    } catch (error) {}
   };
 
-  // --- RENDER CARD ---
   const renderCard = (cardItem) => {
-    // Handle case where card data might be missing/empty
-    if (!cardItem) return <View style={styles.card} />
-
-    ;
-
-
+    if (!cardItem) return <View style={styles.card} />;
     return (
       <View style={styles.card}>
-        <Text style={{position: "absolute", right: 10, top: 8, fontFamily: "Baloo2"}}>{`${currentIndex + 1} / ${card?.length}`}</Text> 
-        
+        <Text
+          style={{
+            position: "absolute",
+            right: 10,
+            top: 8,
+            fontFamily: "Baloo2",
+          }}
+        >{`${currentIndex + 1} / ${card?.length}`}</Text>
         <Text style={styles.cardText}>{cardItem.text}</Text>
       </View>
     );
   };
 
-  // --- HANDLERS ---
   const handleSwipedAll = () => {
-    // console.log("All cards swiped");
-    setIsEndOfDeck(true); // Switch the view to the "Finished" screen
+    setIsEndOfDeck(true);
   };
 
   const handleRestart = () => {
     setIsEndOfDeck(false);
-    setDeckKey((prev) => prev + 1); // Changing the key forces the Swiper to re-mount from scratch
+    setDeckKey((prev) => prev + 1);
   };
 
   const handleGoBack = () => {
     navigation.goBack();
   };
 
-  // --- 1. VIEW: FINISHED SCREEN ---
+  // --- 1. VIEW: FINISHED SCREEN (Animated) ---
   if (isEndOfDeck) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
+      <Animated.View
+        style={[
+          styles.container,
+          styles.centerContent,
+          { opacity: finishedOpacity },
+        ]}
+      >
         <Text style={styles.finishedTitle}>That&apos;s all for now! 🎉</Text>
         <Text style={styles.finishedSubtitle}>
           You&apos;ve seen all the lines in this category.
         </Text>
 
-        <TouchableOpacity
+        <BouncyButton
           style={[styles.actionButton, styles.restartButton]}
           onPress={handleRestart}
         >
           <Text style={styles.actionButtonText}>🔄 Restart Category</Text>
-        </TouchableOpacity>
+        </BouncyButton>
 
-        <TouchableOpacity
+        <BouncyButton
           style={[styles.actionButton, styles.goBackButton]}
           onPress={handleGoBack}
         >
           <Text style={styles.actionButtonText}>🔙 Go Back</Text>
-        </TouchableOpacity>
-      </View>
+        </BouncyButton>
+      </Animated.View>
     );
   }
 
   // --- 2. VIEW: SWIPE DECK ---
   return (
     <View style={styles.container}>
-      <ShareCard ref={shareCardRef} text={currentCardText} />
+      {/* Hidden container for screenshot */}
+      <View style={{ position: "absolute", opacity: 0, zIndex: -1 }}>
+        <ShareCard ref={shareCardRef} text={currentCardText} />
+      </View>
 
-      <View style={styles.swiperContainer}>
+      {/* Animated Wrapper for Swiper */}
+      <Animated.View
+        style={[
+          styles.swiperContainer,
+          {
+            opacity: deckOpacity,
+            transform: [{ translateY: deckSlide }],
+          },
+        ]}
+      >
         <Swiper
-          key={deckKey} // Key trick to allow restarting
+          key={deckKey}
           ref={swiperRef}
           cards={card}
           renderCard={renderCard}
           onSwipedRight={(cardIndex) => {
-            // Get the actual card object and save it
             const likedCard = card[cardIndex];
             saveToFavorites(likedCard);
           }}
-          onSwiped={(index) => handleCardIndexChange(index + 1)} // Update text for next card
-          onSwipedLeft={(cardIndex) => console.log("PASSED")}
+          onSwiped={(index) => handleCardIndexChange(index + 1)}
           onSwipedAll={handleSwipedAll}
           cardIndex={0}
           backgroundColor={"transparent"}
@@ -206,34 +276,35 @@ export default function SwipeDeck({ card }) {
           }}
           animateOverlayLabelsOpacity
         />
-      </View>
+      </Animated.View>
 
-      {/* Buttons */}
+      {/* Buttons (Uses BouncyButton) */}
       <View style={styles.buttonsContainer}>
-        <TouchableOpacity
+        <BouncyButton
           style={[styles.button, styles.dislikeButton]}
           onPress={() => swiperRef.current.swipeLeft()}
         >
           <Text style={styles.buttonText}>❌</Text>
-        </TouchableOpacity>
+        </BouncyButton>
 
-        <TouchableOpacity
+        <BouncyButton
           style={[styles.button, styles.likeButton]}
           onPress={() => swiperRef.current.swipeRight()}
         >
           <Text style={styles.buttonText}>❤️</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </BouncyButton>
+
+        <BouncyButton
           style={[styles.button, styles.shareButton]}
           onPress={shareImage}
-          disabled={isSharing} // Disable button while loading
+          disabled={isSharing}
         >
           {isSharing ? (
             <ActivityIndicator size="small" color="#FFF" />
           ) : (
             <Text style={styles.buttonText}>📤</Text>
           )}
-        </TouchableOpacity>
+        </BouncyButton>
       </View>
     </View>
   );
@@ -261,7 +332,7 @@ const styles = StyleSheet.create({
     borderColor: "#E8E8E8",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff", // Ensure card has white background
+    backgroundColor: "#fff",
     padding: 20,
     elevation: 5,
     shadowColor: "#000",
@@ -289,7 +360,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 5,
-    zIndex: 1,
   },
   dislikeButton: {
     backgroundColor: "#FFCDD2",
@@ -301,8 +371,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
   },
   shareButton: {
-    backgroundColor: "#4FC3F7", // Nice Blue for share
-    marginBottom: 10, // Adjust position as needed
+    backgroundColor: "#4FC3F7",
   },
   // Finished Screen Styles
   finishedTitle: {
@@ -319,15 +388,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   actionButton: {
-    width: "80%",
+    width: "100%", // Adjusted to work well inside BouncyButton
     padding: 15,
     borderRadius: 12,
     alignItems: "center",
     marginBottom: 15,
     elevation: 2,
+    // Note: widths should usually be defined on the child of BouncyButton or container
+    minWidth: 200, 
   },
   restartButton: {
-    backgroundColor: "#FFD54F", // Yellow/Gold
+    backgroundColor: "#FFD54F",
   },
   goBackButton: {
     backgroundColor: "#FFF",

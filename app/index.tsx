@@ -12,39 +12,33 @@ import TopicButton from "../components/TopicButton";
 import { BannerAdComponent, showInterstitialAd } from "../services/AdManager";
 import { db } from "../services/firebaseConfig";
 import { syncDataWithFirebase } from "../services/syncDataWithFirebase";
+
 export default function Index() {
   const [showSplash, setShowSplash] = useState(true);
   const { adConfig, setAdConfig, clickCount } = useContext(adConfigContext);
   const { data, setData } = useContext(dataContext);
-  const { favorites, setFavorites } = useContext(favoritesContext)
+  const { favorites, setFavorites } = useContext(favoritesContext);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const loadAndSyncData = async () => {
       try {
-        // Check if data exists in AsyncStorage
         const cachedData = await AsyncStorage.getItem("cheezyLines");
-
         if (cachedData) {
           const parsedData = JSON.parse(cachedData);
           setData(parsedData);
         } else {
-          // Fetch from Firebase only if not cached
           const querySnapshot = await getDocs(collection(db, "cheezy-lines"));
           const fetchedData = querySnapshot.docs.map(doc => doc.data());
-          // console.log("🔥 Data from Firebase:", fetchedData);
-
-          // Save and set
           await AsyncStorage.setItem("cheezyLines", JSON.stringify(fetchedData));
           setData(fetchedData);
         }
         setLoading(false);
-        // Sync in background
         syncDataWithFirebase();
       } catch (error) {
         // console.error("❌ Load + Sync error:", error);
       }
     };
-
     loadAndSyncData();
   }, []);
 
@@ -58,9 +52,9 @@ export default function Index() {
         await SplashScreen.hideAsync();
       }
     }
-
     prepare();
 
+    // Splash Screen Timer
     const timer = setTimeout(() => {
       setShowSplash(false);
     }, 3000);
@@ -70,7 +64,6 @@ export default function Index() {
 
   useEffect(() => {
     let unsubscribe;
-
     const fetchAdSettings = () => {
       try {
         unsubscribe = onSnapshot(
@@ -80,24 +73,15 @@ export default function Index() {
               setAdConfig(doc.data());
             }
           },
-          (error) => {
-            // console.log('Error fetching ad settings:', error);
-          }
+          (error) => {}
         );
-      } catch (error) {
-        // console.log('Error setting up snapshot:', error);
-      }
+      } catch (error) {}
     };
-
     fetchAdSettings();
-
     return () => {
       if (unsubscribe) unsubscribe();
     };
   }, []);
-
-  // console.log("clickCOiunt", clickCount)
-
 
   useEffect(() => {
     const loadFavorites = async () => {
@@ -106,11 +90,8 @@ export default function Index() {
         if (storedFavorites) {
           setFavorites(JSON.parse(storedFavorites));
         }
-      } catch (err) {
-        // console.error("Failed to load favorites from AsyncStorage:", err);
-      }
+      } catch (err) {}
     };
-
     loadFavorites();
   }, []);
 
@@ -119,9 +100,6 @@ export default function Index() {
       showInterstitialAd(adConfig);
     }
   }, [clickCount, adConfig]);
-
-
-
 
   if (showSplash) {
     return <SplashScreenComponent />;
@@ -134,15 +112,17 @@ export default function Index() {
         <Header />
       </View>
 
-
       {/* Main Content */}
       <View style={styles.content}>
-        {/* Your main content here */}
-        {loading ? <ActivityIndicator
-          size={"large"}
-          color={"#000"}
-          style={{ padding: 26 }}
-        /> : <TopicButton data={data} />}
+        {loading ? (
+          <ActivityIndicator
+            size={"large"}
+            color={"#000"}
+            style={{ padding: 26 }}
+          />
+        ) : (
+          <TopicButton data={data} />
+        )}
       </View>
 
       {/* Bottom Banner Ad */}
@@ -161,11 +141,11 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     backgroundColor: colors.BACKGROUND,
     alignItems: "center",
+    zIndex: 10,
   },
   content: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-
 });

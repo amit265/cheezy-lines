@@ -1,47 +1,40 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useContext } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import LineCard from "../../components/LineCard";
-import colors from "../../constants/colors";
-import { BannerAdComponent } from "../../services/AdManager";
-import { adConfigContext } from "../../context/AppContext";
 import SwipeDeck from "../../components/SwipeDeck";
+import colors from "../../constants/colors";
+import { adConfigContext } from "../../context/AppContext";
+import { BannerAdComponent } from "../../services/AdManager";
+
 export default function Topic() {
   const { dataParams } = useLocalSearchParams();
-  const{adConfig} = useContext(adConfigContext);
+  const { adConfig } = useContext(adConfigContext);
   const router = useRouter();
-  const data = JSON.parse(dataParams);
-  const lines = data?.lines;
 
-  // console.log("Topic Data:", data);
-
-  const renderItem = ({ item }) => (
-    <View>
-      <LineCard lines={item} />
-    </View>
-  );
+  // Safety check in case params are missing
+  const data = dataParams ? JSON.parse(dataParams) : {};
+  const lines = data?.lines || [];
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
       <View style={styles.headerContainer}>
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => router.back()} hitSlop={10}>
           <Ionicons name="arrow-back-sharp" size={36} color="black" />
         </Pressable>
+        
         <Text style={styles.headerText}>{data?.title}</Text>
       </View>
 
-      {/* <FlatList
-        data={lines}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => `${item?.id}-${index}`}
-      /> */}
+      {/* Content (SwipeDeck) */}
       <View style={styles.content}>
-       <SwipeDeck card = {lines}/>
+       <SwipeDeck card={lines}/>
       </View>
-        {adConfig?.showBannerAds && <BannerAdComponent />}
-     
+      
+      {/* Banner Ad */}
+      {adConfig?.showBannerAds && <BannerAdComponent />}
     </SafeAreaView>
   );
 }
@@ -51,7 +44,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.BACKGROUND,
     alignItems: "center",
-
   },
   headerContainer: {
     paddingVertical: 10,
@@ -61,15 +53,13 @@ const styles = StyleSheet.create({
     width: "90%",
     borderBottomWidth: 1,
     alignItems: "center",
-
+    zIndex: 10,
   },
   content: {
     flex: 1,
     width: "100%",
     backgroundColor: colors.BACKGROUND,
     justifyContent: "center",
-
- 
   },
   headerText: {
     color: "#000",
@@ -77,5 +67,4 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-Bold",
     textAlign: "left",
   },
-
 });
