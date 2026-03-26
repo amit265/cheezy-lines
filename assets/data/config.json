@@ -1,0 +1,37 @@
+{
+  "developerName": "destya studio",
+  "brandName": "destyastudio",
+  "email": "hello@destyastudio.com",
+  "website": "https://destyastudio.com",
+  "assetsBaseUrl": "https://destyastudio.com/apps",
+  "icon": {
+    "type": "static",
+    "path": "logo.png"
+  },
+  "header_image": {
+    "type": "static",
+    "path": "header_image.png"
+  },
+  "socialLinks": {
+    "twitter": "https://x.com/destya_studio",
+    "instagram": "https://www.instagram.com/destya_studio/",
+    "tiktok": "https://www.tiktok.com/@destya_studio",
+    "linkedin": "https://www.linkedin.com/company/destyastudio/",
+    "youtube": "https://www.youtube.com/@destya_studio",
+    "playStore": "https://play.google.com/store/apps/dev?id=9125804892178700830",
+    "appStore": "https://apps.apple.com/us/developer/destya-eka-capricornesia/id1879262455"
+  },
+  "support": {
+    "email": "hello@destyastudio.com"
+  },
+  "legal": {
+    "privacyBaseUrl": "https://destyastudio.com/apps",
+    "termsBaseUrl": "https://destyastudio.com/apps"
+  },
+  "features": {
+    "showMoreApps": true,
+    "showAbout": true,
+    "showSocialLinks": true
+  },
+  "configVersion": 1
+}

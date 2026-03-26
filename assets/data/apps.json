@@ -1,0 +1,127 @@
+[
+  {
+    "slug": "spin-the-wheel",
+    "title": "Spin the Wheel : Pick for me",
+    "shortDescription": "Spin the wheel to decide fun topics, games, meals, or challenges!",
+    "category": "Entertainment",
+    "icon": {
+      "type": "static",
+      "path": "icon.png"
+    },
+    "playStoreLink": "https://play.google.com/store/apps/details?id=com.mindcraftlearning.spinthewheel",
+    "appStoreLink": "https://apps.apple.com/us/app/spinny-random-picker-wheel/id6760378786",
+    "platforms": {
+      "android": true,
+      "ios": true
+    },
+    "tags": ["fun", "random", "games"],
+    "recommendedIn": ["question-games"],
+    "priority": 1,
+    "active": true,
+    "createdAt": "2025-01-10",
+    "legal": {
+      "hasCustomPrivacy": false,
+      "hasCustomTerms": false
+    }
+  },
+  {
+    "slug": "code-respite",
+    "title": "CodeRespite: Refresh Your Tech Skills",
+    "shortDescription": "Refresh coding skills with HTML, CSS, JS, React & more using code and quizzes.",
+    "category": "Productivity",
+    "icon": {
+      "type": "static",
+      "path": "icon.png"
+    },
+    "playStoreLink": "https://play.google.com/store/apps/details?id=com.mindcraftlearning.coderespite",
+    "appStoreLink": "",
+    "platforms": {
+      "android": true,
+      "ios": false
+    },
+    "tags": ["coding", "learning", "utilities"],
+    "recommendedIn": ["trivia-quest-ai"],
+    "priority": 2,
+    "active": true,
+    "createdAt": "2025-01-10",
+    "legal": {
+      "hasCustomPrivacy": false,
+      "hasCustomTerms": false
+    }
+  },
+  {
+    "slug": "question-games",
+    "title": "AI Icebreaker: Question Games",
+    "shortDescription": "Spark connection with AI-powered conversation starters, party games & icebreakers.",
+    "category": "Social / Lifestyle",
+    "icon": {
+      "type": "static",
+      "path": "icon.png"
+    },
+    "playStoreLink": "https://play.google.com/store/apps/details?id=com.mindcraftlearning.questiongames",
+    "appStoreLink": "https://apps.apple.com/us/app/ai-icebreaker-question-games/id6759521053",
+    "platforms": {
+      "android": true,
+      "ios": true
+    },
+    "tags": ["ai", "social", "party"],
+    "recommendedIn": ["spin-the-wheel"],
+    "priority": 3,
+    "active": true,
+    "createdAt": "2025-01-10",
+    "legal": {
+      "hasCustomPrivacy": false,
+      "hasCustomTerms": false
+    }
+  },
+  {
+    "slug": "cheezylines",
+    "title": "Cheesy Lines: So Bad, It Works",
+    "shortDescription": "Cheesy Lines: A fun app with countless pick-up lines to share, save, and enjoy.",
+    "category": "Entertainment",
+    "icon": {
+      "type": "static",
+      "path": "icon.png"
+    },
+    "playStoreLink": "https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines",
+    "appStoreLink": "",
+    "platforms": {
+      "android": true,
+      "ios": false
+    },
+    "tags": ["fun", "social", "entertainment"],
+    "recommendedIn": ["question-games"],
+    "priority": 4,
+    "active": true,
+    "createdAt": "2025-01-10",
+    "legal": {
+      "hasCustomPrivacy": false,
+      "hasCustomTerms": false
+    }
+  },
+  {
+    "slug": "trivia-quest-ai",
+    "title": "Trivia Quest AI: Fun Quiz Game",
+    "shortDescription": "Test your knowledge with AI trivia! Compete, unlock, and climb the leaderboard!",
+    "category": "Education",
+    "icon": {
+      "type": "static",
+      "path": "icon.png"
+    },
+    "playStoreLink": "https://play.google.com/store/apps/details?id=com.coderespite.triviaquestai",
+    "appStoreLink": "",
+    "platforms": {
+      "android": true,
+      "ios": false
+    },
+    "tags": ["ai", "quiz", "learning"],
+    "recommendedIn": ["code-respite"],
+    "priority": 5,
+    "active": true,
+    "createdAt": "2025-01-10",
+    "legal": {
+      "hasCustomPrivacy": false,
+      "hasCustomTerms": false
+    }
+  }
+]

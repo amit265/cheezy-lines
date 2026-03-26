@@ -1,0 +1,11 @@
+[
+  {
+    "id": "featured-apps",
+    "title": "The Library",
+    "imageUrl": "/apps/header_image.png",
+    "redirectType": "external",
+    "redirectTarget": "/apps",
+    "active": true,
+    "priority": 1
+  }
+]

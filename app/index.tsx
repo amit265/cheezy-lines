@@ -18,28 +18,12 @@ export default function Index() {
   const { adConfig, setAdConfig, clickCount } = useContext(adConfigContext);
   const { data, setData } = useContext(dataContext);
   const { favorites, setFavorites } = useContext(favoritesContext);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadAndSyncData = async () => {
-      try {
-        const cachedData = await AsyncStorage.getItem("cheezyLines");
-        if (cachedData) {
-          const parsedData = JSON.parse(cachedData);
-          setData(parsedData);
-        } else {
-          const querySnapshot = await getDocs(collection(db, "cheezy-lines"));
-          const fetchedData = querySnapshot.docs.map(doc => doc.data());
-          await AsyncStorage.setItem("cheezyLines", JSON.stringify(fetchedData));
-          setData(fetchedData);
-        }
-        setLoading(false);
-        syncDataWithFirebase();
-      } catch (error) {
-        // console.error("❌ Load + Sync error:", error);
-      }
-    };
-    loadAndSyncData();
+    // We can still call syncDataWithFirebase here if we want to ensure it's running when Index is mounted
+    // though RootLayout might be a better place for it if we want it global.
+    // For now, let's keep it here but remove the initial fetch logic since RootLayout already does it.
+    syncDataWithFirebase();
   }, []);
 
   useEffect(() => {
@@ -114,15 +98,7 @@ export default function Index() {
 
       {/* Main Content */}
       <View style={styles.content}>
-        {loading ? (
-          <ActivityIndicator
-            size={"large"}
-            color={"#000"}
-            style={{ padding: 26 }}
-          />
-        ) : (
-          <TopicButton data={data} />
-        )}
+        <TopicButton data={data} />
       </View>
 
       {/* Bottom Banner Ad */}

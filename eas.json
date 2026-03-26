@@ -1,6 +1,6 @@
 {
   "cli": {
-    "appVersionSource": "local"
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -18,6 +18,15 @@
     "production": {
       "android": {
         "buildType": "app-bundle"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "track": "production",
+        "releaseStatus": "completed",
+        "releaseNotes": "./release-notes.txt"
       }
     }
   }

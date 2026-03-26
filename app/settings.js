@@ -5,7 +5,7 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useContext } from "react";
 import {
   Alert,
   Linking,
@@ -17,13 +17,15 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import colors from "../constants/colors";
 import { BannerAdComponent } from "../services/AdManager";
+import { globalConfigContext } from "../context/AppContext";
+
 export default function Settings() {
   const router = useRouter();
+  const { globalConfig } = useContext(globalConfigContext);
 
   const handleContactUs = () => {
-
-    const email = "mindcraftlearning97@gmail.com";
-    const subject = "Support Request for Cheesy Lines";
+    const email = globalConfig?.email || "mindcraftlearning97@gmail.com";
+    const subject = `Support Request for ${globalConfig?.brandName || "Cheesy Lines"}`;
     const body = "Hi, I need help with...";
     const url = `mailto:${email}?subject=${encodeURIComponent(
       subject
@@ -37,7 +39,7 @@ export default function Settings() {
     try {
       const result = await Share.share({
         message:
-          "Check out this amazing app on the Play Store!\n\nhttps://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines",
+          `Check out this amazing app on the Play Store!\n\n${globalConfig?.socialLinks?.playStore || "https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines"}`,
       });
 
       if (result.action === Share.sharedAction) {
@@ -155,7 +157,7 @@ export default function Settings() {
             }}
             onPress={() =>
               Linking.openURL(
-                "https://mindcraftlearning.github.io/cheezy-lines"
+                `${globalConfig?.legal?.privacyBaseUrl}/cheezylines/privacy` || "https://mindcraftlearning.github.io/cheezy-lines"
               )
             }
           >
@@ -182,7 +184,7 @@ export default function Settings() {
             }}
             onPress={() =>
               Linking.openURL(
-                "https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines"
+                globalConfig?.socialLinks?.playStore || "https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines"
               )
             }
           >

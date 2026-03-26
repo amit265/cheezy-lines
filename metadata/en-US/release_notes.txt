@@ -1,0 +1,1 @@
+minor changes in the config to smoothen the experience

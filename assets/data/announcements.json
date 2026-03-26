@@ -1,0 +1,11 @@
+[
+  {
+    "id": "welcome-launch",
+    "title": "Welcome to the Lab",
+    "message": "Destya Studio is now live with 5 new digital artifacts. Check them out!",
+    "type": "info",
+    "active": true,
+    "startDate": "2026-03-01T00:00:00Z",
+    "endDate": "2026-04-30T23:59:59Z"
+  }
+]
