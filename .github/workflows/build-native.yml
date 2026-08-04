@@ -1,0 +1,60 @@
+name: Build Native App (No EAS)
+on:
+  workflow_dispatch: # Allows manual trigger from the Actions tab
+  push:
+    branches:
+      - main
+
+jobs:
+  # 🤖 Build Android App
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # Generates the native android/ folder using app.json
+      - name: Prebuild Android
+        run: npx expo prebuild --platform android
+
+      # Build Release AAB (Production App Bundle)
+      - name: Build Android App Bundle (Release AAB)
+        run: |
+          cd android
+          ./gradlew bundleRelease
+
+      # Build Release APK (For Direct Sharing/Testing)
+      - name: Build Android APK (Release APK)
+        run: |
+          cd android
+          ./gradlew assembleRelease
+
+      - name: Upload Release AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
