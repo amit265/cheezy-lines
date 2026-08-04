@@ -2,7 +2,7 @@
   "expo": {
     "name": "Cheezy Lines: So Bad, It Works",
     "slug": "cheezy-lines",
-    "version": "1.1.3",
+    "version": "1.1.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "cheezylines",
@@ -10,7 +10,11 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mindcraftlearning.cheezylines"
+      "bundleIdentifier": "com.mindcraftlearning.cheezylines",
+      "buildNumber": "9",
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +23,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.mindcraftlearning.cheezylines",
-      "versionCode": 8,
+      "versionCode": 9,
       "googleServicesFile": "./google-services.json",
       "intentFilters": [
         {
@@ -29,7 +33,7 @@
             {
               "scheme": "https",
               "host": "destyastudio.com",
-              "pathPrefix": "/cheezylines"
+              "pathPrefix": "/products/cheezylines"
             }
           ],
           "category": [
@@ -60,7 +64,8 @@
         "react-native-google-mobile-ads",
         {
           "androidAppId": "ca-app-pub-7433519007687449~8705553150",
-          "iosAppId": ""
+          "iosAppId": "ca-app-pub-7433519007687449~6163351543",
+          "userTrackingPermission": "This identifier will be used to deliver personalized ads to you."
         }
       ],
       [
@@ -88,7 +93,8 @@
       "@sentry/react-native/expo",
       "./plugins/withAndroidForceCoreSdk.js",
       "@sentry/react-native",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-tracking-transparency"
     ],
     "experiments": {
       "typedRoutes": true

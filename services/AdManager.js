@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { AppState, View } from "react-native";
+import { AppState, View, Platform } from "react-native";
 import {
   AdEventType,
   AppOpenAd,
@@ -8,10 +8,11 @@ import {
   InterstitialAd,
   TestIds,
 } from "react-native-google-mobile-ads";
+import { requestTrackingPermissionsAsync } from "expo-tracking-transparency";
 import { adConfigContext } from "../context/AppContext";
 
 // ✅ Helper to get ad unit IDs based on test mode
-const getAdUnitId = (type, testAds) => {
+export const getAdUnitId = (type, testAds) => {
   const adUnitIds = {
     banner: testAds
       ? TestIds.ADAPTIVE_BANNER
@@ -66,9 +67,21 @@ const AdManager = () => {
     return () => subscription.remove();
   }, [adConfig]);
 
-  // ✅ Load ads when config changes
+  // ✅ Request Tracking Permission on iOS, then load ads
   useEffect(() => {
-    loadAds(adConfig);
+    const initAds = async () => {
+      try {
+        if (Platform.OS === "ios") {
+          // Request tracking consent
+          await requestTrackingPermissionsAsync();
+        }
+      } catch (err) {
+        console.warn("Error requesting tracking permissions:", err);
+      }
+      loadAds(adConfig);
+    };
+
+    initAds();
   }, [adConfig]);
 
   // ✅ Load Ads

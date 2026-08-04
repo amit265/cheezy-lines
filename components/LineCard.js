@@ -12,6 +12,7 @@ import {
   Text,
   View,
 } from "react-native";
+import RNShare from "./ShareProxy";
 import { captureRef } from "react-native-view-shot";
 import { favoritesContext } from "../context/AppContext";
 import ShareCard from "./ShareCard";
@@ -77,7 +78,8 @@ export default function LineCard({ lines }) {
     if (isSharing) return;
     setIsSharing(true);
     try {
-      await Clipboard.setStringAsync(lines?.text);
+      const captionText = `${lines?.text}\n\nGet more Cheesy Lines: https://destyastudio.com/products/cheezylines?lineId=${lines?.id}`;
+      await Clipboard.setStringAsync(captionText);
       setTimeout(async () => {
         try {
           const uri = await captureRef(shareCardRef, {
@@ -86,10 +88,10 @@ export default function LineCard({ lines }) {
             result: "tmpfile",
           });
 
-            await Sharing.shareAsync(uri, {
-              mimeType: "image/png",
-              dialogTitle: `Share your cheesy line! https://destyastudio.com/products/cheezylines?lineId=${lines?.id}`,
-              UTI: "public.png",
+            await RNShare.open({
+              url: uri, // local file URI
+              message: captionText,
+              title: "Share your cheesy line!", // Used in email subjects or similar intents
             });
             logEvent('line_shared', { line_id: lines?.id });
           } catch (error) {
@@ -151,11 +153,11 @@ export default function LineCard({ lines }) {
     }
   };
 
-  if (!lines) return null;
-
   const heartStyle = useAnimatedStyle(() => ({
     transform: [{ scale: heartScale.value }]
   }));
+
+  if (!lines) return null;
 
   return (
     <View style={styles.card}>

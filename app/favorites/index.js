@@ -134,10 +134,16 @@ export default function Index() {
 
       {/* Content Area */}
       {favorites?.length === 0 ? (
-        <Animated.View style={[{ flex: 1, justifyContent: "center", alignItems: "center" }, emptyStateStyle]}>
-          <TouchableOpacity onPress={() => router.push("/")}>
-            <Text style={[styles.buttonText, { fontSize: 25 }]}>No Favorites yet 💔</Text>
-            <Text style={[styles.buttonText, { textAlign: 'center', marginTop: 10, color: colors.PRIMARY }]}>Tap to find some lines!</Text>
+        <Animated.View style={[{ flex: 1, justifyContent: "center", alignItems: "center", width: "100%", paddingHorizontal: 40 }, emptyStateStyle]}>
+          <View style={styles.illustratedCircle}>
+            <Ionicons name="heart-dislike-outline" size={80} color="#FFB74D" />
+          </View>
+          <Text style={styles.emptyTitle}>No Favorites Yet</Text>
+          <Text style={styles.emptySubtitle}>
+            {"You haven't saved any cheesy lines yet. Swipe right on your favorites to see them here!"}
+          </Text>
+          <TouchableOpacity style={styles.exploreButton} onPress={() => router.push("/")}>
+            <Text style={styles.exploreButtonText}>Explore Lines</Text>
           </TouchableOpacity>
         </Animated.View>
       ) : (
@@ -199,5 +205,50 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Poppins-Regular",
     textAlign: "left",
+  },
+  illustratedCircle: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: "#FFF3E0", // Soft orange background
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 30,
+    shadowColor: "#FFB74D",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontFamily: "Poppins-Bold",
+    color: "#333",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    fontFamily: "Poppins-Regular",
+    color: "#777",
+    textAlign: "center",
+    marginBottom: 40,
+    lineHeight: 24,
+  },
+  exploreButton: {
+    backgroundColor: "#FFB74D",
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 30,
+    shadowColor: "#FFB74D",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  exploreButtonText: {
+    color: "#FFF",
+    fontSize: 18,
+    fontFamily: "Poppins-Bold",
   },
 });

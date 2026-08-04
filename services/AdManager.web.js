@@ -16,3 +16,4 @@ export const BannerAdComponent = () => {
 };
 
 export default AdManager;
+export const getAdUnitId = () => "mock-unit-id";

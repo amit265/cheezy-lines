@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import * as Clipboard from "expo-clipboard";
 import * as Sharing from "expo-sharing";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState, useMemo } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -11,15 +11,54 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  Platform,
+  useWindowDimensions,
   View,
 } from "react-native";
+import RNShare from "./ShareProxy";
+import * as Haptics from "expo-haptics";
+import * as StoreReview from "expo-store-review";
+import Feather from "@expo/vector-icons/Feather";
 import Swiper from "react-native-deck-swiper";
 import { captureRef } from "react-native-view-shot";
 import colors from "../constants/colors";
 import { shareCaptions } from "../constants/constant";
-import { favoritesContext } from "../context/AppContext";
+import { favoritesContext, adConfigContext } from "../context/AppContext";
 import { shuffleArray } from "../utils/shuffleQuestion";
 import ShareCard from "./ShareCard";
+import { getAdUnitId } from "../services/AdManager";
+import { BannerAd, BannerAdSize } from "./NativeBannerAd";
+
+// --- SUB-COMPONENT: Ad Card (only renders when ad is loaded) ---
+const AdCard = ({ unitId }) => {
+  const [adLoaded, setAdLoaded] = useState(false);
+  const [adFailed, setAdFailed] = useState(false);
+
+  // If ad failed to load, render nothing (invisible card)
+  if (adFailed) {
+    return <View style={{ width: 0, height: 0 }} />;
+  }
+
+  return (
+    <View style={[
+      styles.card,
+      { backgroundColor: "#FDF5E6", justifyContent: "center", alignItems: "center" },
+      !adLoaded && { opacity: 0 }, // hide until loaded
+    ]}>
+      {adLoaded && (
+        <Text style={{ fontFamily: "Poppins-Bold", color: "#aaa", fontSize: 11, marginBottom: 10 }}>
+          Sponsored
+        </Text>
+      )}
+      <BannerAd
+        unitId={unitId}
+        size={BannerAdSize.MEDIUM_RECTANGLE}
+        onAdLoaded={() => setAdLoaded(true)}
+        onAdFailedToLoad={() => setAdFailed(true)}
+      />
+    </View>
+  );
+};
 
 // --- SUB-COMPONENT: Reusable Bouncy Button ---
 const BouncyButton = ({ onPress, style, children, disabled }) => {
@@ -61,14 +100,31 @@ export default function SwipeDeck({ card }) {
   const swiperRef = useRef(null);
   const navigation = useNavigation();
   const { setFavorites } = useContext(favoritesContext);
+  const { adConfig } = useContext(adConfigContext);
   const shareCardRef = useRef();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { width } = useWindowDimensions();
+  const cardWidth = Math.min(width, 480) - 40;
   const [isSharing, setIsSharing] = useState(false);
   const [currentCardText, setCurrentCardText] = useState(card[0]?.text || "");
   const [isEndOfDeck, setIsEndOfDeck] = useState(false);
   const [deckKey, setDeckKey] = useState(0);
   const playstoreLink = "https://bit.ly/question-games";
   const shareMessage = shuffleArray(shareCaptions);
+
+  // --- COMPUTE CARDS WITH ADS ---
+  const cardsWithAds = useMemo(() => {
+    if (!card || card.length === 0) return [];
+    const newCards = [];
+    card.forEach((c, index) => {
+      newCards.push(c);
+      // Inject an ad every 6 cards (after index 5)
+      if ((index + 1) % 6 === 0 && index !== card.length - 1) {
+        newCards.push({ id: `ad-${index}`, isAd: true });
+      }
+    });
+    return newCards;
+  }, [card]);
 
   // --- ANIMATION REFS ---
   const deckOpacity = useRef(new Animated.Value(0)).current;
@@ -111,8 +167,18 @@ export default function SwipeDeck({ card }) {
   // --- SHARE FUNCTION ---
   const shareImage = async () => {
     if (isSharing) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsSharing(true);
-    const captionText = `${currentCardText}\n\nGet more Cheesy Lines: https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines`;
+    
+    const currentCard = cardsWithAds[currentIndex];
+    if (!currentCard || currentCard.isAd) {
+      setIsSharing(false);
+      Alert.alert("Oops", "You cannot share an ad!");
+      return;
+    }
+
+    const currentId = currentCard.id || currentIndex;
+    const captionText = `${currentCardText}\n\nGet more Cheesy Lines: https://destyastudio.com/products/cheezylines?lineId=${currentId}`;
     try {
       await Clipboard.setStringAsync(captionText);
       setTimeout(async () => {
@@ -122,10 +188,11 @@ export default function SwipeDeck({ card }) {
             quality: 1.0,
             result: "tmpfile",
           });
-          await Sharing.shareAsync(uri, {
-            mimeType: "image/png",
-            dialogTitle: "Share your cheesy line!",
-            UTI: "public.png",
+          // Use react-native-share to share both image and text seamlessly on all platforms
+          await RNShare.open({
+            url: uri, // local file URI
+            message: captionText,
+            title: "Share your cheesy line!", // Used in email subjects or similar intents
           });
         } catch (error) {
           // console.error("Error", error);
@@ -139,10 +206,19 @@ export default function SwipeDeck({ card }) {
     }
   };
 
-  const handleCardIndexChange = (index) => {
+  const handleCardIndexChange = async (index) => {
     setCurrentIndex(index);
-    if (card[index]) {
-      setCurrentCardText(card[index].text);
+    if (cardsWithAds[index] && !cardsWithAds[index].isAd) {
+      setCurrentCardText(cardsWithAds[index].text);
+    }
+    
+    // Request Store Review after 15 swipes
+    if (index === 15) {
+      try {
+        if (await StoreReview.hasAction()) {
+          StoreReview.requestReview();
+        }
+      } catch (err) {}
     }
   };
 
@@ -162,6 +238,18 @@ export default function SwipeDeck({ card }) {
 
   const renderCard = (cardItem) => {
     if (!cardItem) return <View style={styles.card} />;
+    
+    if (cardItem.isAd) {
+      // Only render the ad card once the ad is confirmed loaded
+      return (
+        <AdCard
+          unitId={getAdUnitId("banner", adConfig?.testAds)}
+        />
+      );
+    }
+
+    const actualCardIndex = card.indexOf(cardItem) + 1;
+
     return (
       <View style={styles.card}>
         <Text
@@ -171,7 +259,7 @@ export default function SwipeDeck({ card }) {
             top: 8,
             fontFamily: "Baloo2",
           }}
-        >{`${currentIndex + 1} / ${card?.length}`}</Text>
+        >{`${actualCardIndex > 0 ? actualCardIndex : currentIndex + 1} / ${card?.length}`}</Text>
         <Text style={styles.cardText}>{cardItem.text}</Text>
       </View>
     );
@@ -243,18 +331,26 @@ export default function SwipeDeck({ card }) {
         <Swiper
           key={deckKey}
           ref={swiperRef}
-          cards={card}
+          cards={cardsWithAds}
           renderCard={renderCard}
           onSwipedRight={(cardIndex) => {
-            const likedCard = card[cardIndex];
-            saveToFavorites(likedCard);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            const likedCard = cardsWithAds[cardIndex];
+            if (likedCard && !likedCard.isAd) {
+              saveToFavorites(likedCard);
+            }
+          }}
+          onSwipedLeft={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           }}
           onSwiped={(index) => handleCardIndexChange(index + 1)}
           onSwipedAll={handleSwipedAll}
           cardIndex={0}
           backgroundColor={"transparent"}
           stackSize={3}
+          cardStyle={{ width: cardWidth, left: 20 }}
           cardVerticalMargin={0}
+          cardHorizontalMargin={20}
           overlayLabels={{
             left: {
               title: "NOPE",
@@ -282,16 +378,22 @@ export default function SwipeDeck({ card }) {
       <View style={styles.buttonsContainer}>
         <BouncyButton
           style={[styles.button, styles.dislikeButton]}
-          onPress={() => swiperRef.current.swipeLeft()}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            swiperRef.current.swipeLeft();
+          }}
         >
-          <Text style={styles.buttonText}>❌</Text>
+          <Feather name="x" size={32} color="#E53935" />
         </BouncyButton>
 
         <BouncyButton
           style={[styles.button, styles.likeButton]}
-          onPress={() => swiperRef.current.swipeRight()}
+          onPress={() => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            swiperRef.current.swipeRight();
+          }}
         >
-          <Text style={styles.buttonText}>❤️</Text>
+          <Feather name="heart" size={28} color="#43A047" />
         </BouncyButton>
 
         <BouncyButton
@@ -300,9 +402,9 @@ export default function SwipeDeck({ card }) {
           disabled={isSharing}
         >
           {isSharing ? (
-            <ActivityIndicator size="small" color="#FFF" />
+            <ActivityIndicator size="small" color="#0277BD" />
           ) : (
-            <Text style={styles.buttonText}>📤</Text>
+            <Feather name="send" size={28} color="#0277BD" />
           )}
         </BouncyButton>
       </View>
@@ -341,11 +443,10 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   cardText: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 24,
     textAlign: "center",
-    color: "#4A3B32",
-    fontFamily: "Poppins-Regular",
+    color: "#333",
+    fontFamily: "Poppins-Bold",
   },
   buttonsContainer: {
     flexDirection: "row",
@@ -354,24 +455,28 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   button: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 5,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
   dislikeButton: {
-    backgroundColor: "#FFCDD2",
+    backgroundColor: "#FFF",
   },
   likeButton: {
-    backgroundColor: "#C8E6C9",
+    backgroundColor: "#FFF",
   },
   buttonText: {
     fontSize: 30,
   },
   shareButton: {
-    backgroundColor: "#4FC3F7",
+    backgroundColor: "#FFF",
   },
   // Finished Screen Styles
   finishedTitle: {

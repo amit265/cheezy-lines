@@ -39,9 +39,10 @@ ShareCard.displayName = "ShareCard";
 
 const styles = StyleSheet.create({
   container: {
-    // We force a square/portrait aspect ratio for sharing (Instagram/WhatsApp Status size)
-    width: 1080,
-    height: 1600,
+    // Shrunk by 50% for vastly improved capture speed.
+    // Device pixel ratio (2x or 3x) will still result in high-res images (1080x1600+).
+    width: 540,
+    height: 800,
     position: "absolute", // Hide it off-screen
     left: -9999,
     top: 0,
@@ -58,15 +59,15 @@ const styles = StyleSheet.create({
     height: "50%", // Focus text in the middle
     justifyContent: "center",
     alignItems: "center",
-    marginTop: -100, // Adjust this to align with the "blank space" in your template
+    marginTop: -50, // Scaled down
   },
   quoteText: {
-    fontSize: 40, // Big text for high-res image
+    fontSize: 24, // Scaled down but still very clear
     fontWeight: "bold",
     color: "#4A3B32", // Dark Brown to match theme
     textAlign: "center",
     fontFamily: "serif",
-    lineHeight: 110,
+    lineHeight: 34,
   },
 });
 

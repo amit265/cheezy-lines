@@ -3,12 +3,47 @@ import { useRouter } from "expo-router";
 import React, { useContext, useEffect, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View, RefreshControl } from "react-native";
 import { FlashList } from "@shopify/flash-list";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withDelay } from "react-native-reanimated";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  withDelay,
+  withRepeat,
+  withSequence,
+} from "react-native-reanimated";
+
+const SkeletonCard = ({ isLeftColumn, itemMargin }) => {
+  const opacity = useSharedValue(0.4);
+
+  useEffect(() => {
+    opacity.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 800 }),
+        withTiming(0.4, { duration: 800 })
+      ),
+      -1,
+      true
+    );
+  }, [opacity]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    flex: 1,
+    height: 160,
+    backgroundColor: "#E5E5E5",
+    borderRadius: 20,
+    marginRight: isLeftColumn ? itemMargin / 2 : 0,
+    marginLeft: isLeftColumn ? 0 : itemMargin / 2,
+    marginBottom: 10,
+  }));
+
+  return <Animated.View style={animatedStyle} />;
+};
 
 const AnimatedCard = ({
   item,
   index,
-  itemWidth,
   itemMargin,
   isLeftColumn,
   onPress,
@@ -18,9 +53,11 @@ const AnimatedCard = ({
   const scaleAnim = useSharedValue(1);
 
   useEffect(() => {
-    const delay = index * 100;
-    opacityAnim.value = withDelay(delay, withTiming(1, { duration: 500 }));
-    slideAnim.value = withDelay(delay, withSpring(0, { damping: 10, stiffness: 100 }));
+    if (index !== undefined) {
+      const delay = index * 50;
+      opacityAnim.value = withDelay(delay, withTiming(1, { duration: 400 }));
+      slideAnim.value = withDelay(delay, withSpring(0, { damping: 10, stiffness: 100 }));
+    }
   }, [index, slideAnim, opacityAnim]);
 
   const handlePressIn = () => {
@@ -31,14 +68,16 @@ const AnimatedCard = ({
     scaleAnim.value = withSpring(1, { damping: 15, stiffness: 300 });
   };
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: slideAnim.value }, { scale: scaleAnim.value }],
-    opacity: opacityAnim.value,
-    width: itemWidth,
-    marginRight: isLeftColumn ? itemMargin / 2 : 0,
-    marginLeft: isLeftColumn ? 0 : itemMargin / 2,
-    marginBottom: 10,
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: slideAnim.value }, { scale: scaleAnim.value }],
+      opacity: opacityAnim.value,
+      flex: 1, // Let FlashList handle the exact widths based on numColumns
+      marginRight: isLeftColumn ? itemMargin / 2 : 0,
+      marginLeft: isLeftColumn ? 0 : itemMargin / 2,
+      marginBottom: 10,
+    };
+  });
 
   return (
     <Animated.View style={animatedStyle}>
@@ -46,9 +85,9 @@ const AnimatedCard = ({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={onPress}
-        style={[styles.itemContainer, { backgroundColor: item?.color }]}
+        style={[styles.itemContainer, { backgroundColor: item?.color || "#FDE9B3" }]}
       >
-        <Text style={styles.buttonText}>{item?.title}</Text>
+        <Text style={styles.buttonText}>{item?.title || ""}</Text>
       </Pressable>
     </Animated.View>
   );
@@ -58,11 +97,23 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
   const router = useRouter();
   const { setClickCount } = useContext(adConfigContext);
 
-  if (!data) return null;
-
-  const screenWidth = Dimensions.get("window").width;
   const itemMargin = 10;
-  const itemWidth = (screenWidth - itemMargin * 3) / 2;
+
+  if (!data || data.length === 0) {
+    const skeletonData = Array.from({ length: 8 });
+    return (
+      <View style={styles.container}>
+        <FlashList
+          data={skeletonData}
+          renderItem={({ index }) => <SkeletonCard isLeftColumn={index % 2 === 0} itemMargin={itemMargin} />}
+          numColumns={2}
+          keyExtractor={(_, index) => `skeleton-${index}`}
+          contentContainerStyle={styles.content}
+          estimatedItemSize={150}
+        />
+      </View>
+    );
+  }
 
   const renderItem = ({ item, index }) => {
     const isLeftColumn = index % 2 === 0;
@@ -71,7 +122,6 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
       <AnimatedCard
         item={item}
         index={index}
-        itemWidth={itemWidth}
         itemMargin={itemMargin}
         isLeftColumn={isLeftColumn}
         onPress={() => {
@@ -111,22 +161,24 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingVertical: 10,
+    paddingHorizontal: 10,
   },
   itemContainer: {
-    height: 150,
+    height: 160,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 10,
+    borderRadius: 20,
     width: "100%",
+    padding: 15,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
     elevation: 5,
   },
   buttonText: {
-    color: "#5D4037",
-    fontSize: 16,
+    color: "#333",
+    fontSize: 15,
     fontFamily: "Poppins-Bold",
     textAlign: "center",
   },

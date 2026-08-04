@@ -64,7 +64,7 @@ export default function CrossPromoHub() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>More from Desty Studio</Text>
+      <Text style={styles.title}>More from Destya Studio</Text>
       {apps.map((app, index) => (
         <TouchableOpacity 
           key={index} 
@@ -85,41 +85,47 @@ export default function CrossPromoHub() {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#0C1D59',
-    borderRadius: 12,
+    backgroundColor: 'transparent',
     marginVertical: 10,
   },
   title: {
-    color: '#FFA500',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
+    color: '#333',
+    fontSize: 20,
+    fontFamily: 'Poppins-Bold',
+    marginBottom: 16,
+    textAlign: 'center',
   },
   card: {
     flexDirection: 'row',
-    backgroundColor: '#132F94',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 10,
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 16,
+    marginBottom: 15,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
   icon: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    marginRight: 12,
+    width: 50,
+    height: 50,
+    borderRadius: 10,
+    marginRight: 15,
   },
   info: {
     flex: 1,
   },
   appName: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#333',
+    fontSize: 14,
+    fontFamily: 'Poppins-Bold',
   },
   appDesc: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 12,
-    marginTop: 4,
+    color: '#666',
+    fontSize: 11,
+    fontFamily: 'Poppins-Regular',
+    marginTop: 2,
   }
 });

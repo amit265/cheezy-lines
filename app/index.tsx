@@ -125,13 +125,11 @@ const styles = StyleSheet.create({
   headerContainer: {
     paddingTop: 10,
     paddingBottom: 10,
-    backgroundColor: colors.BACKGROUND,
     alignItems: "center",
     zIndex: 10,
   },
   content: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    width: "100%",
   },
 });

@@ -16,6 +16,11 @@ export default function useUpdateChecker() {
         if (hasPrompted) return; // Only show once per session
 
         const response = await fetch(GITHUB_RAW_URL, { cache: 'no-store' });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch version: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         const currentVersion = Constants.expoConfig.version;
@@ -25,7 +30,7 @@ export default function useUpdateChecker() {
           await AsyncStorage.setItem("updatePromptedThisSession", "true");
         }
       } catch (err) {
-        console.log("Update check failed:", err);
+        // Silently ignore — version.json may not exist yet or network is unavailable
       }
     };
     checkUpdate();

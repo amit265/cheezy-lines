@@ -11,10 +11,13 @@ import {
   Linking,
   Share,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
   ScrollView
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useState, useEffect } from "react";
 import CrossPromoHub from "../components/CrossPromoHub";
 import { SafeAreaView } from "react-native-safe-area-context";
 import colors from "../constants/colors";
@@ -24,6 +27,7 @@ import { globalConfigContext } from "../context/AppContext";
 export default function Settings() {
   const router = useRouter();
   const { globalConfig } = useContext(globalConfigContext);
+
 
   const handleContactUs = () => {
     const email = globalConfig?.email || "mindcraftlearning97@gmail.com";
@@ -41,7 +45,7 @@ export default function Settings() {
     try {
       const result = await Share.share({
         message:
-          `Check out this amazing app on the Play Store!\n\n${globalConfig?.socialLinks?.playStore || "https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines"}`,
+          `Check out this amazing app!\n\n${globalConfig?.socialLinks?.playStore || "https://destyastudio.com/products/cheezylines"}`,
       });
 
       if (result.action === Share.sharedAction) {
@@ -89,6 +93,20 @@ export default function Settings() {
         showsVerticalScrollIndicator={false}
       >
         {/* Number of Spins */}
+
+        {/* AI Key Settings Link */}
+        <TouchableOpacity 
+          style={{ marginBottom: 20, padding: 15, backgroundColor: "#FDF5E6", borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          onPress={() => router.push("/ai-settings")}
+        >
+          <View>
+            <Text style={{ fontFamily: "Poppins-Bold", fontSize: 16, color: "#333", marginBottom: 5 }}>AI Magic Settings</Text>
+            <Text style={{ fontFamily: "Poppins-Regular", fontSize: 12, color: "#666" }}>
+              Configure your Groq API Key
+            </Text>
+          </View>
+          <Feather name="chevron-right" size={24} color="#333" />
+        </TouchableOpacity>
 
         {/* Footer links */}
         <View
@@ -187,7 +205,7 @@ export default function Settings() {
             }}
             onPress={() =>
               Linking.openURL(
-                globalConfig?.socialLinks?.playStore || "https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines"
+                globalConfig?.socialLinks?.playStore || "https://destyastudio.com/products/cheezylines"
               )
             }
           >
