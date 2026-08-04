@@ -8,13 +8,13 @@ import { getFirestore } from "firebase/firestore";
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyBq0wVyh3EfaTXHkKwdJiLUda-00ZYKI8c",
-  authDomain: "destyastudio-cf294.firebaseapp.com",
-  projectId: "destyastudio-cf294",
-  storageBucket: "destyastudio-cf294.firebasestorage.app",
-  messagingSenderId: "964274576146",
-  appId: "1:964274576146:web:b4d473753209021617b1cb",
-  measurementId: "G-Y89RKCPC19"
+  apiKey: process.env.EXPO_PUBLIC_GLOBAL_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_GLOBAL_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_GLOBAL_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_GLOBAL_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_GLOBAL_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_GLOBAL_FIREBASE_APP_ID,
+  measurementId: process.env.EXPO_PUBLIC_GLOBAL_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase

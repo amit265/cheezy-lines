@@ -1,40 +1,28 @@
-import React, { useEffect, useRef } from "react";
-import { Animated, Image, StyleSheet, View } from "react-native";
+import React, { useEffect } from "react";
+import { Image, StyleSheet, View, Text } from "react-native";
 import Colors from "../constants/colors";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from "react-native-reanimated";
 
 const SplashScreenComponent = () => {
-  // 1. Initialize Animated Values
-  const fadeAnim = useRef(new Animated.Value(0)).current; // Starts invisible
-  const scaleAnim = useRef(new Animated.Value(0.5)).current; // Starts at half size
+  const fadeAnim = useSharedValue(0);
+  const scaleAnim = useSharedValue(0.5);
 
   useEffect(() => {
-    // 2. Run Animations in Parallel
-    Animated.parallel([
-      // Fade In
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000, // 1 second
-        useNativeDriver: true,
-      }),
-      // Spring Bounce Effect (Trending "Pop" feel)
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        friction: 6,  // Lower = more bouncy
-        tension: 40,  // Higher = faster
-        useNativeDriver: true,
-      }),
-    ]).start();
+    fadeAnim.value = withTiming(1, { duration: 1000 });
+    scaleAnim.value = withSpring(1, { damping: 6, stiffness: 40 });
   }, [fadeAnim, scaleAnim]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: fadeAnim.value,
+    transform: [{ scale: scaleAnim.value }],
+  }));
 
   return (
     <View style={styles.container}>
       <Animated.View
         style={[
           styles.logoContainer,
-          {
-            opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }], // Bind scale to animated value
-          },
+          animatedStyle
         ]}
       >
         <Image
@@ -44,7 +32,7 @@ const SplashScreenComponent = () => {
         />
       </Animated.View>
 
-      {/* Optional: Add a loading spinner below that fades in later */}
+      <Text style={styles.brandingText}>● built by destyastudio.</Text>
     </View>
   );
 };
@@ -64,9 +52,15 @@ const styles = StyleSheet.create({
   iconImage: {
     width: 200,
     height: 200,
-    // Adjusted margins to center visually; 
-    // negative margins can sometimes clip animations
   },
+  brandingText: {
+    position: "absolute",
+    bottom: 50,
+    fontFamily: "monospace",
+    fontSize: 10,
+    color: "rgba(0, 0, 0, 0.4)",
+    letterSpacing: 1.5,
+  }
 });
 
 export default SplashScreenComponent;

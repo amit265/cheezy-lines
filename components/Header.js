@@ -1,64 +1,70 @@
 import colors from "@/constants/colors";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef } from "react";
-import { Animated, Easing, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  withSequence,
+  runOnJS,
+} from "react-native-reanimated";
 
 export default function Header() {
   const router = useRouter();
 
-  // 1. Initialize Animated Values
-  const heartScale = useRef(new Animated.Value(1)).current;
-  const settingsRotate = useRef(new Animated.Value(0)).current;
+  const heartScale = useSharedValue(1);
+  const settingsRotate = useSharedValue(0);
 
-  // 2. Define Animation Logic
   const animateHeart = (callback) => {
-    // Sequence: Rapidly scale up to 1.3, then spring back to 1
-    Animated.sequence([
-      Animated.timing(heartScale, {
-        toValue: 1.3,
-        duration: 150,
-        useNativeDriver: true,
-        easing: Easing.ease,
-      }),
-      Animated.spring(heartScale, {
-        toValue: 1,
-        friction: 4,
-        tension: 40,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      if (callback) callback();
-    });
+    heartScale.value = withSequence(
+      withTiming(1.3, { duration: 150 }),
+      withSpring(1, { damping: 4, stiffness: 40 }, (finished) => {
+        if (finished && callback) {
+          runOnJS(callback)();
+        }
+      })
+    );
   };
 
   const animateSettings = (callback) => {
-    // Rotation logic handled by interpolation below (0 -> 1 value change)
-    settingsRotate.setValue(0);
-    Animated.timing(settingsRotate, {
-      toValue: 1,
-      duration: 600,
-      easing: Easing.elastic(1.5), // Adds a little "wobble" at the end
-      useNativeDriver: true,
-    }).start(() => {
-      settingsRotate.setValue(0); // Reset for next time
-      if (callback) callback();
-    });
+    settingsRotate.value = 0;
+    settingsRotate.value = withTiming(
+      1,
+      { duration: 600 },
+      (finished) => {
+        if (finished) {
+          settingsRotate.value = 0;
+          if (callback) runOnJS(callback)();
+        }
+      }
+    );
   };
 
-  // 3. Run on Load (Mount)
   useEffect(() => {
-    // Add a slight delay so it happens after the page slide-in
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       animateHeart();
       animateSettings();
     }, 500);
+    return () => clearTimeout(timer);
   }, []);
 
-  // 4. Interpolate Rotation Value for Settings
-  const spin = settingsRotate.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: ["0deg", "45deg", "0deg"], // Rotates 45 degrees and back
+  const heartStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: heartScale.value }],
+  }));
+
+  const settingsStyle = useAnimatedStyle(() => {
+    let deg = 0;
+    if (settingsRotate.value <= 0.5) {
+      deg = settingsRotate.value * 90;
+    } else {
+      deg = (1 - settingsRotate.value) * 90;
+    }
+    return {
+      transform: [{ rotate: `${deg}deg` }],
+    };
   });
 
   return (
@@ -91,7 +97,7 @@ export default function Header() {
             animateHeart(() => router.push("/favorites"));
           }}
         >
-          <Animated.View style={{ transform: [{ scale: heartScale }] }}>
+          <Animated.View style={heartStyle}>
             <Ionicons name="heart" size={36} color="red" />
           </Animated.View>
         </TouchableOpacity>
@@ -103,7 +109,7 @@ export default function Header() {
             animateSettings(() => router.push("/settings"));
           }}
         >
-          <Animated.View style={{ transform: [{ rotate: spin }] }}>
+          <Animated.View style={settingsStyle}>
             <Ionicons name="settings-outline" size={36} color="black" />
           </Animated.View>
         </TouchableOpacity>

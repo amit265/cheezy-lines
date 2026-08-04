@@ -5,8 +5,17 @@ import * as Network from 'expo-network';
 import { ErrorBoundary } from 'react-error-boundary';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MobileAds from "react-native-google-mobile-ads";
+import * as Sentry from '@sentry/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+Sentry.init({
+  dsn: '', // Add your DSN here
+});
+
+const queryClient = new QueryClient();
+
 import ErrorFallBack from "./ErrorFallback";
-import { StatusBar, Text, View } from "react-native";
+import { StatusBar, Text, View, Platform, StyleSheet } from "react-native";
 import { adConfigContext, dbUpdateContext, favoritesContext, dataContext, globalConfigContext, appsRegistryContext, aboutContext, announcementsContext, bannersContext } from "../context/AppContext";
 import AdManager from "../services/AdManager";
 import colors from "@/constants/colors";
@@ -19,8 +28,28 @@ import defaultApps from "@/assets/data/apps.json";
 import defaultAbout from "@/assets/data/about.json";
 import defaultAnnouncements from "@/assets/data/announcements.json";
 import defaultBanners from "@/assets/data/banners.json";
+import useUpdateChecker from "../hooks/useUpdateChecker";
+import useDeepLinkHandler from "../hooks/useDeepLinkHandler";
+import { scheduleDailyReminder } from "../services/notifications";
+import { Alert, TouchableOpacity, Linking, Image } from "react-native";
 
-export default function RootLayout() {
+function RootLayout() {
+  useDeepLinkHandler(); // Listen for deep links
+  const { updateAvailable, updateInfo } = useUpdateChecker();
+
+  useEffect(() => {
+    scheduleDailyReminder(); // Initialize daily notifications
+  }, []);
+
+  useEffect(() => {
+    if (updateAvailable && updateInfo) {
+      Alert.alert(
+        "Update Available",
+        `Version ${updateInfo.latestVersion} is available!\n\nWhat's New:\n${updateInfo.whatsNew.join('\n')}`,
+        [{ text: "OK" }]
+      );
+    }
+  }, [updateAvailable, updateInfo]);
 
 
   const [fontsLoaded] = useFonts({
@@ -170,16 +199,9 @@ export default function RootLayout() {
 
 
 
-  return <>
-    <ErrorBoundary
-      FallbackComponent={ErrorFallBack}
-      onError={(error, info) => {
-        // console.log('Global Error:', error);
-        // console.log('Component Stack:', info.componentStack);
-        // Log the error to an external service like Sentry or Firebase
-      }}
-    >
-      <SafeAreaProvider>
+  const RootContent = () => (
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
         <globalConfigContext.Provider value={globalConfigValue}>
           <appsRegistryContext.Provider value={appsRegistryValue}>
             <aboutContext.Provider value={aboutValue}>
@@ -189,13 +211,10 @@ export default function RootLayout() {
                     <favoritesContext.Provider value={favoritesValue}>
                       <dbUpdateContext.Provider value={dbUpdateValue}>
                         <adConfigContext.Provider value={adConfigValue}>
-
                           <StatusBar backgroundColor={colors.BACKGROUND} barStyle="dark-content" hidden={false} />
                           <AdManager />
-
                           <Stack screenOptions={{ headerShown: false }} />
                         </adConfigContext.Provider>
-
                       </dbUpdateContext.Provider>
                     </favoritesContext.Provider>
                   </dataContext.Provider>
@@ -204,11 +223,48 @@ export default function RootLayout() {
             </aboutContext.Provider>
           </appsRegistryContext.Provider>
         </globalConfigContext.Provider>
-      </SafeAreaProvider>
+      </QueryClientProvider>
+    </SafeAreaProvider>
+  );
 
-    </ErrorBoundary >
-
-
-
-  </>;
+  return (
+    <ErrorBoundary
+      FallbackComponent={ErrorFallBack}
+      onError={(error, info) => {
+        Sentry.captureException(error);
+      }}
+    >
+      {Platform.OS === 'web' ? (
+        <View style={{ flex: 1, backgroundColor: "#0C1D59", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+          {/* Side Panel for Wide Screens (hidden on narrow screens via standard flex wrap or max-width, but here we just use fixed max-width) */}
+          <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 40, maxWidth: 400 }}>
+            <Text style={{ color: "white", fontSize: 40, fontFamily: "Poppins-Bold", textAlign: 'center', marginBottom: 20 }}>
+              Cheesy Lines
+            </Text>
+            <Text style={{ color: "white", fontSize: 18, fontFamily: "Poppins-Regular", textAlign: 'center', marginBottom: 40 }}>
+              Get the best cheesy pickup lines for every situation! Available now on iOS and Android.
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 20 }}>
+              <TouchableOpacity onPress={() => Linking.openURL('https://apps.apple.com')}>
+                <View style={{ backgroundColor: '#fff', padding: 10, borderRadius: 10 }}><Text style={{fontFamily: 'Poppins-Bold'}}>App Store</Text></View>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => Linking.openURL('https://play.google.com')}>
+                <View style={{ backgroundColor: '#fff', padding: 10, borderRadius: 10 }}><Text style={{fontFamily: 'Poppins-Bold'}}>Google Play</Text></View>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          <View style={{ width: "100%", maxWidth: 480, height: "95%", maxHeight: 850, borderRadius: 20, overflow: "hidden", backgroundColor: "#132F94", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 20, elevation: 10 }}>
+             <RootContent />
+          </View>
+        </View>
+      ) : (
+        <View style={{ flex: 1 }}>
+           <RootContent />
+        </View>
+      )}
+    </ErrorBoundary>
+  );
 }
+
+export default Sentry.wrap(RootLayout);

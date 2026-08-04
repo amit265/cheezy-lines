@@ -1,51 +1,47 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
-  Animated,
-  FlatList,
   Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { FlashList } from "@shopify/flash-list";
 import LineCard from "../../components/LineCard";
 import colors from "../../constants/colors";
 import { favoritesContext } from "../../context/AppContext";
 import { BannerAdComponent } from "../../services/AdManager";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  withDelay,
+  runOnJS,
+} from "react-native-reanimated";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // --- SUB-COMPONENT: Animated List Item ---
 const AnimatedItem = ({ children, index }) => {
-  const slideAnim = useRef(new Animated.Value(50)).current; // Start 50px down
-  const fadeAnim = useRef(new Animated.Value(0)).current;   // Start transparent
+  const slideAnim = useSharedValue(50);
+  const fadeAnim = useSharedValue(0);
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 500,
-        delay: index * 100, // Stagger effect
-        useNativeDriver: true,
-      }),
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        friction: 6,
-        tension: 40,
-        delay: index * 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
+    fadeAnim.value = withDelay(index * 100, withTiming(1, { duration: 500 }));
+    slideAnim.value = withDelay(index * 100, withSpring(0, { damping: 6, stiffness: 40 }));
+  }, [index, fadeAnim, slideAnim]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: fadeAnim.value,
+    transform: [{ translateY: slideAnim.value }],
+  }));
 
   return (
-    <Animated.View
-      style={{
-        opacity: fadeAnim,
-        transform: [{ translateY: slideAnim }],
-      }}
-    >
+    <Animated.View style={animatedStyle}>
       {children}
     </Animated.View>
   );
@@ -53,69 +49,53 @@ const AnimatedItem = ({ children, index }) => {
 
 export default function Index() {
   const router = useRouter();
-  const { favorites } = useContext(favoritesContext);
+  const { favorites, setFavorites } = useContext(favoritesContext);
+  const [refreshing, setRefreshing] = useState(false);
 
   // --- HEADER ANIMATION STATE ---
-  const headerSlide = useRef(new Animated.Value(-50)).current;
-  const headerFade = useRef(new Animated.Value(0)).current;
-  const backBtnScale = useRef(new Animated.Value(1)).current;
+  const headerSlide = useSharedValue(-50);
+  const headerFade = useSharedValue(0);
+  const backBtnScale = useSharedValue(1);
 
   // --- EMPTY STATE ANIMATION ---
-  const emptyStateFade = useRef(new Animated.Value(0)).current;
-  const emptyStateScale = useRef(new Animated.Value(0.8)).current;
+  const emptyStateFade = useSharedValue(0);
+  const emptyStateScale = useSharedValue(0.8);
 
   // --- ON LOAD ANIMATION ---
   useEffect(() => {
-    // Animate Header
-    Animated.parallel([
-      Animated.timing(headerFade, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.spring(headerSlide, {
-        toValue: 0,
-        friction: 6,
-        tension: 40,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    headerFade.value = withTiming(1, { duration: 500 });
+    headerSlide.value = withSpring(0, { damping: 6, stiffness: 40 });
 
-    // If empty, animate the empty message
     if (favorites?.length === 0) {
-      Animated.parallel([
-        Animated.timing(emptyStateFade, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.spring(emptyStateScale, {
-          toValue: 1,
-          friction: 5,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      emptyStateFade.value = withTiming(1, { duration: 800 });
+      emptyStateScale.value = withSpring(1, { damping: 5, stiffness: 100 });
     }
-  }, []);
+  }, [favorites?.length, headerFade, headerSlide, emptyStateFade, emptyStateScale]);
 
   // --- INTERACTION HANDLERS ---
   const handleBackPressIn = () => {
-    Animated.spring(backBtnScale, {
-      toValue: 0.8,
-      speed: 20,
-      useNativeDriver: true,
-    }).start();
+    backBtnScale.value = withSpring(0.8, { damping: 15, stiffness: 300 });
   };
 
   const handleBackPressOut = () => {
-    Animated.spring(backBtnScale, {
-      toValue: 1,
-      friction: 4,
-      tension: 40,
-      useNativeDriver: true,
-    }).start(() => {
-      router.back();
+    backBtnScale.value = withSpring(1, { damping: 4, stiffness: 40 }, (finished) => {
+      if (finished) {
+        runOnJS(router.back)();
+      }
     });
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const storedFavorites = await AsyncStorage.getItem("FAVORITE_LINES");
+      if (storedFavorites) {
+        setFavorites(JSON.parse(storedFavorites));
+      }
+    } catch (err) {}
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
   };
 
   const renderItem = ({ item, index }) => (
@@ -126,21 +106,26 @@ export default function Index() {
     </AnimatedItem>
   );
 
+  const headerStyle = useAnimatedStyle(() => ({
+    opacity: headerFade.value,
+    transform: [{ translateY: headerSlide.value }]
+  }));
+
+  const backBtnStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: backBtnScale.value }]
+  }));
+
+  const emptyStateStyle = useAnimatedStyle(() => ({
+    opacity: emptyStateFade.value,
+    transform: [{ scale: emptyStateScale.value }]
+  }));
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Animated Header */}
-      <Animated.View 
-        style={[
-          styles.headerContainer,
-          { opacity: headerFade, transform: [{ translateY: headerSlide }] }
-        ]}
-      >
-        <Pressable
-          onPressIn={handleBackPressIn}
-          onPressOut={handleBackPressOut}
-          hitSlop={10}
-        >
-          <Animated.View style={{ transform: [{ scale: backBtnScale }] }}>
+      <Animated.View style={[styles.headerContainer, headerStyle]}>
+        <Pressable onPressIn={handleBackPressIn} onPressOut={handleBackPressOut} hitSlop={10}>
+          <Animated.View style={backBtnStyle}>
             <Ionicons name="arrow-back-sharp" size={36} color="black" />
           </Animated.View>
         </Pressable>
@@ -149,31 +134,25 @@ export default function Index() {
 
       {/* Content Area */}
       {favorites?.length === 0 ? (
-        <Animated.View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            opacity: emptyStateFade,
-            transform: [{ scale: emptyStateScale }],
-          }}
-        >
+        <Animated.View style={[{ flex: 1, justifyContent: "center", alignItems: "center" }, emptyStateStyle]}>
           <TouchableOpacity onPress={() => router.push("/")}>
-            <Text style={[styles.buttonText, { fontSize: 25 }]}>
-              No Favorites yet 💔
-            </Text>
-            <Text style={[styles.buttonText, { textAlign: 'center', marginTop: 10, color: colors.PRIMARY }]}>
-              Tap to find some lines!
-            </Text>
+            <Text style={[styles.buttonText, { fontSize: 25 }]}>No Favorites yet 💔</Text>
+            <Text style={[styles.buttonText, { textAlign: 'center', marginTop: 10, color: colors.PRIMARY }]}>Tap to find some lines!</Text>
           </TouchableOpacity>
         </Animated.View>
       ) : (
-        <FlatList
-          data={favorites}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => `${item?.id}-${index}`}
-          contentContainerStyle={{ paddingBottom: 60 }} // Extra padding for ad
-        />
+        <View style={{ flex: 1, width: "100%" }}>
+          <FlashList
+            data={favorites}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => `${item?.id}-${index}`}
+            contentContainerStyle={{ paddingBottom: 60 }}
+            estimatedItemSize={200}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#FFA500" />
+            }
+          />
+        </View>
       )}
 
       <View style={styles.bannerContainer}>

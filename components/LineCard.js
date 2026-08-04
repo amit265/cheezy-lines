@@ -6,7 +6,6 @@ import { useContext, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Animated, // Import Animated
   Pressable,
   Share,
   StyleSheet,
@@ -16,32 +15,33 @@ import {
 import { captureRef } from "react-native-view-shot";
 import { favoritesContext } from "../context/AppContext";
 import ShareCard from "./ShareCard";
+import { triggerStoreReview } from "../services/storeReview";
+import useAnalytics from "../services/useAnalytics";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withSequence, runOnJS } from "react-native-reanimated";
 
 // --- SUB-COMPONENT: Bouncy Icon Button ---
 const BouncyIconButton = ({ icon, onPress, library = "Ionicons", color = "#000" }) => {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const scaleAnim = useSharedValue(1);
 
   const handlePressIn = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 0.8, // Shrink
-      speed: 20,
-      useNativeDriver: true,
-    }).start();
+    scaleAnim.value = withSpring(0.8, { damping: 15, stiffness: 300 });
   };
 
   const handlePressOut = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 1, // Bounce back
-      friction: 4,
-      tension: 40,
-      useNativeDriver: true,
-    }).start();
-    if (onPress) onPress();
+    scaleAnim.value = withSpring(1, { damping: 4, stiffness: 40 }, (finished) => {
+      if (finished && onPress) {
+        runOnJS(onPress)();
+      }
+    });
   };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scaleAnim.value }],
+  }));
 
   return (
     <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut} style={styles.iconButton}>
-      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <Animated.View style={animatedStyle}>
         {library === "FontAwesome" ? (
           <FontAwesome name={icon} size={26} color={color} />
         ) : (
@@ -57,9 +57,10 @@ export default function LineCard({ lines }) {
   const { favorites, setFavorites } = useContext(favoritesContext);
   const shareCardRef = useRef();
   const [isSharing, setIsSharing] = useState(false);
+  const { logEvent } = useAnalytics();
 
   // --- ANIMATION REFS ---
-  const heartScale = useRef(new Animated.Value(1)).current;
+  const heartScale = useSharedValue(1);
 
   const isFavorite = favorites.some((fav) => fav.id === lines.id);
 
@@ -85,16 +86,17 @@ export default function LineCard({ lines }) {
             result: "tmpfile",
           });
 
-          await Sharing.shareAsync(uri, {
-            mimeType: "image/png",
-            dialogTitle: "Share your cheesy line!",
-            UTI: "public.png",
-          });
-        } catch (error) {
-          // console.error("Error sharing", error);
-        } finally {
-          setIsSharing(false);
-        }
+            await Sharing.shareAsync(uri, {
+              mimeType: "image/png",
+              dialogTitle: `Share your cheesy line! https://destyastudio.com/products/cheezylines?lineId=${lines?.id}`,
+              UTI: "public.png",
+            });
+            logEvent('line_shared', { line_id: lines?.id });
+          } catch (error) {
+            // console.error("Error sharing", error);
+          } finally {
+            setIsSharing(false);
+          }
       }, 150);
     } catch (error) {
       setIsSharing(false);
@@ -106,10 +108,10 @@ export default function LineCard({ lines }) {
 
   const addFavorite = async () => {
     // 1. Animate the heart pop manually before processing state
-    Animated.sequence([
-      Animated.timing(heartScale, { toValue: 1.3, duration: 100, useNativeDriver: true }),
-      Animated.spring(heartScale, { toValue: 1, friction: 4, useNativeDriver: true }),
-    ]).start();
+    heartScale.value = withSequence(
+      withTiming(1.3, { duration: 100 }),
+      withSpring(1, { damping: 4, stiffness: 40 })
+    );
 
     // 2. Logic
     try {
@@ -127,6 +129,14 @@ export default function LineCard({ lines }) {
         FAVORITES_KEY,
         JSON.stringify(updatedFavorites)
       );
+
+      if (!isAlreadyFavorite) {
+        logEvent('line_saved', { line_id: lines?.id });
+        if (updatedFavorites.length === 5) {
+          triggerStoreReview();
+        }
+      }
+
     } catch (err) {
       // console.error("Failed to update favorites", err);
     }
@@ -143,6 +153,10 @@ export default function LineCard({ lines }) {
 
   if (!lines) return null;
 
+  const heartStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: heartScale.value }]
+  }));
+
   return (
     <View style={styles.card}>
       <ShareCard ref={shareCardRef} text={lines?.text} />
@@ -155,7 +169,7 @@ export default function LineCard({ lines }) {
 
       <View style={styles.buttonRow}>
         {/* Favorite Button with Special Pop Animation Wrapper */}
-        <Animated.View style={{ transform: [{ scale: heartScale }] }}>
+        <Animated.View style={heartStyle}>
            <BouncyIconButton
             icon={isFavorite ? "close" : "heart-outline"} // Keeping your logic (close if favorite)
             color={isFavorite ? "#E53935" : "#000"} // Added Red color if it's a remove action
@@ -193,7 +207,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 26,
     overflow: "hidden",
-    elevation: 4, // Increased slightly for better depth
+    elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -206,24 +220,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   text: {
-    fontSize: 18, // Increased slightly for readability
+    fontSize: 18,
     color: "#000",
     textAlign: "center",
     fontFamily: "Poppins-Regular",
     paddingHorizontal: 20,
-    lineHeight: 28, // Better line height
+    lineHeight: 28,
   },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-evenly",
-    alignItems: "center", // Fixed alignContent -> alignItems
+    alignItems: "center",
     marginTop: -30,
     marginBottom: 20,
   },
   iconButton: {
-    padding: 10, // Increased padding for easier tapping
+    padding: 10,
     borderRadius: 20,
-    backgroundColor: "#f5f5f5", // Subtle background for buttons
+    backgroundColor: "#f5f5f5",
   },
   loaderContainer: {
     padding: 10,
@@ -231,8 +245,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
   },
   leftComma: {
-    fontSize: 40, // Made quotes larger
-    color: "#DDD", // Made quotes lighter
+    fontSize: 40,
+    color: "#DDD",
     fontFamily: "Poppins-Regular",
     textAlign: "left",
     marginLeft: 10,

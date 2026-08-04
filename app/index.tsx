@@ -18,6 +18,16 @@ export default function Index() {
   const { adConfig, setAdConfig, clickCount } = useContext(adConfigContext);
   const { data, setData } = useContext(dataContext);
   const { favorites, setFavorites } = useContext(favoritesContext);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    // Simulate network request or pull new Firebase snapshot explicitly if needed
+    syncDataWithFirebase();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  };
 
   useEffect(() => {
     // We can still call syncDataWithFirebase here if we want to ensure it's running when Index is mounted
@@ -98,7 +108,7 @@ export default function Index() {
 
       {/* Main Content */}
       <View style={styles.content}>
-        <TopicButton data={data} />
+        <TopicButton data={data} refreshing={refreshing} onRefresh={handleRefresh} />
       </View>
 
       {/* Bottom Banner Ad */}

@@ -13,7 +13,9 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ScrollView
 } from "react-native";
+import CrossPromoHub from "../components/CrossPromoHub";
 import { SafeAreaView } from "react-native-safe-area-context";
 import colors from "../constants/colors";
 import { BannerAdComponent } from "../services/AdManager";
@@ -76,14 +78,15 @@ export default function Settings() {
         Settings
       </Text>
 
-      <View
+      <ScrollView
         style={{
           width: "90%",
           backgroundColor: "white",
-          borderRadius: 60,
+          borderRadius: 20,
           padding: 20,
           height: "70%",
         }}
+        showsVerticalScrollIndicator={false}
       >
         {/* Number of Spins */}
 
@@ -200,7 +203,8 @@ export default function Settings() {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+        <CrossPromoHub />
+      </ScrollView>
 
       <TouchableOpacity
         onPress={() => {
