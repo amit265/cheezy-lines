@@ -506,9 +506,6 @@ Create a file at `.github/workflows/build-native.yml` with the following configu
 name: Build Native App (No EAS)
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   build-android:

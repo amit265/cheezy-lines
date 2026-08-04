@@ -40,7 +40,26 @@
             "BROWSABLE",
             "DEFAULT"
           ]
+        },
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "destyastudio.com",
+              "pathPrefix": "/products/cheezylines"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
+      ],
+      "permissions": [
+        "com.google.android.gms.permission.AD_ID",
+        "com.google.android.gms.permission.AD_ID"
       ]
     },
     "web": {
@@ -105,6 +124,12 @@
       "eas": {
         "projectId": "a7df07ee-ed77-4692-a815-7252db2379c6"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a7df07ee-ed77-4692-a815-7252db2379c6"
     }
   }
 }

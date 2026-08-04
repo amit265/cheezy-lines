@@ -1,9 +1,6 @@
 name: Build Native App (No EAS)
 on:
   workflow_dispatch: # Allows manual trigger from the Actions tab
-  push:
-    branches:
-      - main
 
 jobs:
   # 🤖 Build Android App
