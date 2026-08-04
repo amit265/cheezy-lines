@@ -2,6 +2,9 @@ name: Build Native App (No EAS)
 on:
   workflow_dispatch: # Allows manual trigger from the Actions tab
 
+env:
+  SENTRY_DISABLE_AUTO_UPLOAD: true # Prevents build failure when Sentry token is missing
+
 jobs:
   # 🤖 Build Android App
   build-android:
