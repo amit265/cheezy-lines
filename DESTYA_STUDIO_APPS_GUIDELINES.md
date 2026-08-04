@@ -492,3 +492,79 @@ To gain full visibility into production crashes, unhandled promise rejections, a
 - **Library:** `@sentry/react-native`
 - **Implementation:** Initialize Sentry at the very top of the app's entry point (`app/_layout.tsx`) using `Sentry.init()`. Wrap the root component in `Sentry.wrap()`.
 - **Action:** Ensure the Expo plugin `@sentry/react-native/expo` is added to `app.config.js` to automatically upload source maps during the EAS build process.
+
+---
+
+## 23. Free Native Builds via GitHub Actions (Bypassing EAS Build Quota)
+
+To avoid paying for EAS Build plans or hitting the 30-builds-per-month free limit, configure GitHub Actions to compile the native code directly on GitHub's free runners (Ubuntu for Android, macOS for iOS).
+
+### A. Setup Workflow File
+Create a file at `.github/workflows/build-native.yml` with the following configuration:
+
+```yaml
+name: Build Native App (No EAS)
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Prebuild Android
+        run: npx expo prebuild --platform android
+
+      - name: Build Android App Bundle (Release AAB)
+        run: |
+          cd android
+          ./gradlew bundleRelease
+
+      - name: Build Android APK (Release APK)
+        run: |
+          cd android
+          ./gradlew assembleRelease
+
+      - name: Upload Release AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+```
+
+### B. Triggering the Build
+1. Push the workflow file to your branch.
+2. Go to **Actions** tab on GitHub.
+3. Select **Build Native App (No EAS)**.
+4. Click **Run workflow** and run it on `main`.
+5. Download your completed `.apk` / `.aab` from the build's artifacts section once done.
+
