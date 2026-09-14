@@ -11,23 +11,23 @@ import {
   Linking,
   Share,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
-  ScrollView
+  ScrollView,
+  StyleSheet,
+  Platform,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useState, useEffect } from "react";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import CrossPromoHub from "../components/CrossPromoHub";
-import { SafeAreaView } from "react-native-safe-area-context";
 import colors from "../constants/colors";
 import { BannerAdComponent } from "../services/AdManager";
 import { globalConfigContext } from "../context/AppContext";
 
 export default function Settings() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { globalConfig } = useContext(globalConfigContext);
-
 
   const handleContactUs = () => {
     const email = globalConfig?.email || "mindcraftlearning97@gmail.com";
@@ -49,193 +49,238 @@ export default function Settings() {
       });
 
       if (result.action === Share.sharedAction) {
-        // console.log("App shared!");
-      } else if (result.action === Share.dismissedAction) {
-        // console.log("Share dismissed.");
+        // App shared!
       }
     } catch (error) {
-      // console.log(error.message);
+      console.log(error.message);
     }
   };
 
+  const SETTINGS_ITEMS = [
+    {
+      key: "share",
+      label: "Share App",
+      hint: "Invite someone else into the experience.",
+      iconFamily: AntDesign,
+      iconName: "sharealt",
+      iconSize: 22,
+    },
+    {
+      key: "contact",
+      label: "Contact Us",
+      hint: "Reach out for help, feedback, or ideas.",
+      iconFamily: FontAwesome,
+      iconName: "send",
+      iconSize: 20,
+    },
+    {
+      key: "privacy",
+      label: "Privacy Policy",
+      hint: "See how the app handles data and consent.",
+      iconFamily: MaterialIcons,
+      iconName: "privacy-tip",
+      iconSize: 22,
+    },
+    {
+      key: "reviews",
+      label: "Rate and Review",
+      hint: "Help others discover the app.",
+      iconFamily: MaterialIcons,
+      iconName: "reviews",
+      iconSize: 22,
+    },
+  ];
+
+  const handlePress = (key) => {
+    if (key === "share") return handleShare();
+    if (key === "contact") return handleContactUs();
+    if (key === "privacy") return Linking.openURL(`${globalConfig?.legal?.privacyBaseUrl}/cheezylines/privacy` || "https://mindcraftlearning.github.io/cheezy-lines");
+    if (key === "reviews") return Linking.openURL(globalConfig?.socialLinks?.playStore || "https://destyastudio.com/products/cheezylines");
+  };
+
+  const renderIcon = (item, color) => {
+    const IconComponent = item.iconFamily;
+    return <IconComponent name={item.iconName} size={item.iconSize} color={color} />;
+  };
+
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        alignItems: "center",
-        backgroundColor: colors.BACKGROUND,
-      }}
-    >
-      <View>
-        <BannerAdComponent />
-      </View>
-      <Text
-        style={{
-          fontSize: 25,
-          fontFamily: "Poppins-Bold",
-          marginBottom: 20,
-          textAlign: "center",
-          color: colors.TEXT,
-          marginTop: 30,
-        }}
+    <LinearGradient colors={[colors.BACKGROUND, "#0A1128"]} style={styles.screen}>
+      <SafeAreaView
+        style={[styles.safeArea, { paddingTop: insets.top + 8 }]}
+        edges={["left", "right"]}
       >
-        Settings
-      </Text>
-
-      <ScrollView
-        style={{
-          width: "90%",
-          backgroundColor: "white",
-          borderRadius: 20,
-          padding: 20,
-          height: "70%",
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Number of Spins */}
-
-        {/* AI Key Settings Link */}
-        <TouchableOpacity 
-          style={{ marginBottom: 20, padding: 15, backgroundColor: "#FDF5E6", borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
-          onPress={() => router.push("/ai-settings")}
-        >
-          <View>
-            <Text style={{ fontFamily: "Poppins-Bold", fontSize: 16, color: "#333", marginBottom: 5 }}>AI Magic Settings</Text>
-            <Text style={{ fontFamily: "Poppins-Regular", fontSize: 12, color: "#666" }}>
-              Configure your Groq API Key
+        <View style={styles.header}>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.heading}>
+              Settings
             </Text>
           </View>
-          <Feather name="chevron-right" size={24} color="#333" />
-        </TouchableOpacity>
-
-        {/* Footer links */}
-        <View
-          style={{
-            flexDirection: "column",
-            justifyContent: "space-around",
-            marginTop: 10,
-            alignItems: "center",
-            marginHorizontal: 20,
-            paddingTop: 20,
-            padding: 10,
-            gap: 20,
-          }}
-        >
           <TouchableOpacity
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "flex-start",
-              alignItems: "center",
-              gap: 20,
-            }}
-            onPress={handleShare}
+            onPress={() => router.back()}
+            style={styles.closeButton}
           >
-            <AntDesign name="sharealt" size={24} color="#000000" />
-            <Text
-              style={{
-                color: "#000000",
-                fontFamily: "Poppins-Regular",
-                fontSize: 18,
-              }}
-            >
-              Share
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "flex-start",
-              alignItems: "center",
-              gap: 20,
-            }}
-            onPress={handleContactUs}
-          >
-            <FontAwesome name="send" size={24} color="#000000" />
-            <Text
-              style={{
-                color: "#000000",
-                fontFamily: "Poppins-Regular",
-                fontSize: 18,
-              }}
-            >
-              Contact Us
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "flex-start",
-              alignItems: "center",
-              gap: 20,
-            }}
-            onPress={() =>
-              Linking.openURL(
-                `${globalConfig?.legal?.privacyBaseUrl}/cheezylines/privacy` || "https://mindcraftlearning.github.io/cheezy-lines"
-              )
-            }
-          >
-            <MaterialIcons name="privacy-tip" size={24} color="#000000" />
-            <Text
-              style={{
-                color: "#000000",
-                fontFamily: "Poppins-Regular",
-                fontSize: 18,
-              }}
-            >
-              Privacy Policy
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "flex-start",
-              alignItems: "center",
-              gap: 20,
-            }}
-            onPress={() =>
-              Linking.openURL(
-                globalConfig?.socialLinks?.playStore || "https://destyastudio.com/products/cheezylines"
-              )
-            }
-          >
-            <MaterialIcons name="reviews" size={24} color="#000000" />
-            <Text
-              style={{
-                color: "#000000",
-                fontFamily: "Poppins-Regular",
-                fontSize: 18,
-              }}
-            >
-              Rate and reviews
-            </Text>
+            <Feather name="x" size={24} color={colors.TEXT} />
           </TouchableOpacity>
         </View>
-        <CrossPromoHub />
-      </ScrollView>
 
-      <TouchableOpacity
-        onPress={() => {
-          router.back();
-        }}
-        style={{
-          padding: 18,
-          zIndex: 1,
-          bottom: 40,
-        }}
-      >
-        <Feather name="x-circle" size={50} color="black" />
-      </TouchableOpacity>
-    </SafeAreaView>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Custom AI Settings */}
+          <View style={styles.panel}>
+            <Text style={styles.sectionTitle}>
+              Advanced Features
+            </Text>
+            <TouchableOpacity
+              style={styles.settingRow}
+              onPress={() => router.push("/ai-settings")}
+              activeOpacity={0.85}
+            >
+              <View style={styles.iconWrap}>
+                <AntDesign name="setting" size={22} color={colors.PRIMARY} />
+              </View>
+              <View style={styles.copyWrap}>
+                <Text style={styles.label}>AI Magic Settings</Text>
+                <Text style={styles.hint}>Configure your own Groq API key</Text>
+              </View>
+              <Feather name="chevron-right" size={20} color={colors.MUTED} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Support and About */}
+          <View style={styles.panel}>
+            <Text style={styles.sectionTitle}>
+              Support & About
+            </Text>
+
+            {SETTINGS_ITEMS.map((item, index) => (
+              <React.Fragment key={item.key}>
+                <TouchableOpacity
+                  style={styles.settingRow}
+                  onPress={() => handlePress(item.key)}
+                  activeOpacity={0.85}
+                >
+                  <View style={styles.iconWrap}>
+                    {renderIcon(item, colors.PRIMARY)}
+                  </View>
+                  <View style={styles.copyWrap}>
+                    <Text style={styles.label}>{item.label}</Text>
+                    <Text style={styles.hint}>{item.hint}</Text>
+                  </View>
+                  <Feather name="chevron-right" size={20} color={colors.MUTED} />
+                </TouchableOpacity>
+                {index < SETTINGS_ITEMS.length - 1 && (
+                  <View style={styles.divider} />
+                )}
+              </React.Fragment>
+            ))}
+          </View>
+
+          {/* More Apps */}
+          <View style={[styles.panel, { padding: 0, paddingBottom: 15, backgroundColor: 'transparent', borderColor: 'transparent' }]}>
+            <Text style={[styles.sectionTitle, { paddingHorizontal: 16, paddingTop: 16 }]}>
+              More Apps from Destya Studio
+            </Text>
+            <CrossPromoHub />
+          </View>
+          
+        </ScrollView>
+        <View style={{ width: "100%", alignItems: "center", paddingBottom: insets.bottom || 20 }}>
+          <BannerAdComponent />
+        </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  headerTextWrap: {
+    flex: 1,
+  },
+  heading: {
+    fontFamily: "Poppins-Bold",
+    fontSize: 28,
+    color: colors.TEXT,
+  },
+  closeButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+    gap: 20,
+  },
+  panel: {
+    borderRadius: 24,
+    padding: 16,
+    borderWidth: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
+    borderColor: "rgba(255, 255, 255, 0.08)",
+  },
+  sectionTitle: {
+    fontFamily: "Poppins-Bold",
+    fontSize: 14,
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
+    marginBottom: 16,
+    color: colors.PRIMARY,
+  },
+  settingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.02)",
+  },
+  iconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+  },
+  copyWrap: {
+    flex: 1,
+  },
+  label: {
+    fontFamily: "Poppins-Bold",
+    fontSize: 15,
+    marginBottom: 2,
+    color: colors.TEXT,
+  },
+  hint: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 12,
+    color: colors.MUTED,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    marginVertical: 4,
+    marginHorizontal: 12,
+  },
+});

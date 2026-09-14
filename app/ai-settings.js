@@ -16,6 +16,7 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Animated, {
   useSharedValue,
@@ -35,7 +36,12 @@ export default function AISettings() {
 
   useEffect(() => {
     const loadKey = async () => {
-      const key = await AsyncStorage.getItem("GROQ_API_KEY");
+      // First check secure store
+      let key = await SecureStore.getItemAsync("ds_custom_groq_api_key");
+      // Fallback to legacy AsyncStorage
+      if (!key) {
+        key = await AsyncStorage.getItem("GROQ_API_KEY");
+      }
       if (key) setApiKey(key);
     };
     loadKey();
@@ -43,7 +49,11 @@ export default function AISettings() {
 
   const saveKey = async (text) => {
     setApiKey(text);
-    await AsyncStorage.setItem("GROQ_API_KEY", text);
+    if (text) {
+      await SecureStore.setItemAsync("ds_custom_groq_api_key", text);
+    } else {
+      await SecureStore.deleteItemAsync("ds_custom_groq_api_key");
+    }
   };
 
   const handleBackPressIn = () => {
