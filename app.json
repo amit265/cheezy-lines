@@ -39,7 +39,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.mindcraftlearning.cheezylines",
-      "versionCode": 9,
+      "versionCode": 10,
       "googleServicesFile": "./google-services.json",
       "intentFilters": [
         {
