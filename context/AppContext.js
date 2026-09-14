@@ -14,3 +14,7 @@ export const bannersContext = createContext();
 
 // Theme Context
 export const themeContext = createContext();
+
+// AI & Ads Context
+export const aiCreditsContext = createContext();
+export const adFreeContext = createContext();

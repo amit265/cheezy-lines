@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View, RefreshControl } from "react-native"
 import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColors } from "../constants/colors";
+import InlineNativeAd from "../components/InlineNativeAd";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -113,7 +114,10 @@ const AnimatedCard = ({
         onPress={onPress}
         style={[
           styles.itemContainer,
-          { backgroundColor: colors.CARD_BG, borderColor: colors.CARD_BORDER }
+          { 
+            backgroundColor: "#FFFFFF", 
+            borderColor: "rgba(0, 0, 0, 0.05)" 
+          }
         ]}
       >
         <View style={styles.contentWrapper}>
@@ -127,9 +131,11 @@ const AnimatedCard = ({
             <Text style={[styles.buttonText, { color: colors.TEXT }]} numberOfLines={1}>
               {item?.title || "Topic"}
             </Text>
-            <Text style={[styles.subtitleText, { color: colors.TEXT_MUTED }]}>
-              {lineCount} {lineCount === 1 ? "Line" : "Lines"}
-            </Text>
+            <View style={[styles.badge, { backgroundColor: `${tint}20` }]}>
+              <Text style={[styles.badgeText, { color: tint }]}>
+                {lineCount} {lineCount === 1 ? "Line" : "Lines"}
+              </Text>
+            </View>
           </View>
         </View>
       </Pressable>
@@ -139,9 +145,22 @@ const AnimatedCard = ({
 
 export default function TopicButton({ data, refreshing, onRefresh }) {
   const router = useRouter();
-  const { setClickCount } = useContext(adConfigContext);
+  const { adConfig, setClickCount } = useContext(adConfigContext);
   const colors = useThemeColors();
   const itemMargin = 15;
+
+  const dataWithAds = React.useMemo(() => {
+    if (!data || data.length === 0) return [];
+    const newData = [];
+    data.forEach((item, index) => {
+      newData.push(item);
+      // Inject an ad after the 8th item (so it appears further down in the grid)
+      if (index === 7 && adConfig?.showBannerAds) {
+        newData.push({ id: `ad-${index}`, isAd: true });
+      }
+    });
+    return newData;
+  }, [data, adConfig]);
 
   if (!data || data.length === 0) {
     const skeletonData = Array.from({ length: 8 });
@@ -159,8 +178,22 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
     );
   }
 
+  const overrideItemLayout = (layout, item) => {
+    if (item.isAd) {
+      layout.span = 2; // Span both columns
+    }
+  };
+
   const renderItem = ({ item, index }) => {
-    const isLeftColumn = index % 2 === 0;
+    if (item.isAd) {
+      return <InlineNativeAd adConfig={adConfig} containerStyle={{ width: "100%", marginBottom: 15 }} />;
+    }
+
+    // The ad is injected at index 8. Items after the ad are shifted by 1 array index,
+    // which flips their odd/even parity and messes up the flex grid margins. 
+    // We adjust the logical index to maintain correct left/right column margins.
+    const logicalIndex = index > 8 ? index - 1 : index;
+    const isLeftColumn = logicalIndex % 2 === 0;
 
     return (
       <AnimatedCard
@@ -185,10 +218,11 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
   return (
     <View style={styles.container}>
       <FlashList
-        data={data}
+        data={dataWithAds}
         renderItem={renderItem}
         numColumns={2}
         keyExtractor={(item, index) => `${item?.id}-${index}`}
+        overrideItemLayout={overrideItemLayout}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         estimatedItemSize={160}
@@ -209,38 +243,44 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   itemContainer: {
-    height: 160,
-    borderRadius: 28,
+    height: 150,
+    borderRadius: 24,
     borderWidth: 1,
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 10,
     elevation: 3,
   },
   contentWrapper: {
     flex: 1,
-    padding: 20,
+    padding: 16,
     justifyContent: "space-between",
   },
   iconWrapper: {
-    width: 56,
-    height: 56,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
   },
   textWrapper: {
-    gap: 4,
+    gap: 8,
+    alignItems: "flex-start",
   },
   buttonText: {
     fontSize: 20,
-    fontFamily: "Outfit-Bold",
+    fontFamily: "Poppins-Bold",
     letterSpacing: 0.5,
   },
-  subtitleText: {
-    fontSize: 14,
-    fontFamily: "Outfit-Regular",
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontFamily: "Poppins-Bold",
   }
 });

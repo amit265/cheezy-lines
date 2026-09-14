@@ -6,10 +6,13 @@ import {
   BannerAd,
   BannerAdSize,
   InterstitialAd,
+  RewardedAd,
+  RewardedAdEventType,
   TestIds,
 } from "react-native-google-mobile-ads";
 import { requestTrackingPermissionsAsync } from "expo-tracking-transparency";
-import { adConfigContext } from "../context/AppContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { adConfigContext, adFreeContext } from "../context/AppContext";
 
 // ✅ Helper to get ad unit IDs based on test mode
 export const getAdUnitId = (type, testAds) => {
@@ -23,6 +26,9 @@ export const getAdUnitId = (type, testAds) => {
     appOpen: testAds
       ? TestIds.APP_OPEN
       : "ca-app-pub-7433519007687449/2418512250",
+    rewarded: testAds
+      ? TestIds.REWARDED
+      : "ca-app-pub-7433519007687449/9302071640",
     nativeAdvanced: testAds
       ? TestIds.NATIVE
       : "ca-app-pub-7433519007687449/2204250645",
@@ -33,9 +39,11 @@ export const getAdUnitId = (type, testAds) => {
 // ✅ Ad references
 let interstitialAd;
 let appOpenAd;
+export let rewardedAd;
 
 const AdManager = () => {
   const { adConfig, setAdConfig } = useContext(adConfigContext);
+  const { isAdFree } = useContext(adFreeContext);
   let interstitialJustShown = false;
   const appPauseCount = useRef(0); // ✅ Track app pause count
   const stopAppOpenAds = useRef(false); // ✅ Flag to stop ads if needed
@@ -47,15 +55,13 @@ const AdManager = () => {
         // ✅ Increment pause count
         appPauseCount.current += 1;
 
-        // console.log(`App Resume Count: ${appPauseCount.current}`);
-
-        // ✅ Show AppOpenAd every second pause
+        // ✅ Show AppOpenAd every second pause, provided ads aren't suppressed
         if (
+          !isAdFree &&
           appPauseCount.current % adConfig?.appOpenAdFrequency === 0 && // Show ad every second pause
           adConfig.showAppOpenAds &&
           appOpenAd?.loaded
         ) {
-          // console.log("Showing App Open Ad");
           appOpenAd.show();
         }
       }
@@ -101,6 +107,9 @@ const AdManager = () => {
     appOpenAd = AppOpenAd.createForAdRequest(
       getAdUnitId("appOpen", config.testAds)
     );
+    rewardedAd = RewardedAd.createForAdRequest(
+      getAdUnitId("rewarded", config.testAds)
+    );
 
     // ✅ Interstitial Ad
     interstitialAd.addAdEventListener(AdEventType.LOADED, () =>
@@ -122,40 +131,90 @@ const AdManager = () => {
     );
 
     appOpenAd.load();
+
+    // ✅ Rewarded Ad
+    rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, () =>
+      console.log("Rewarded Ad Loaded!")
+    );
+    rewardedAd.addAdEventListener(AdEventType.CLOSED, () => {
+      if (!rewardedAd?.loaded) rewardedAd.load();
+    });
+    
+    rewardedAd.load();
   };
 
   return null;
 };
 
 // ✅ Functions to Show Ads
-export const showInterstitialAd = (adConfig) => {
+export const showInterstitialAd = (adConfig, isAdFree) => {
+  if (isAdFree) return;
   if (interstitialAd?.loaded && adConfig.showInterstitialAds) {
     interstitialAd.show();
     interstitialAd.load();
   } else {
-    // console.log("Interstitial Ad not ready");
-    interstitialAd.load();
+    interstitialAd?.load();
   }
 };
 
-// export const showAppOpenAd = (adConfig) => {
-//   if ( !adConfig.showOpenAppAds) return;
-//   if (appOpenAd?.loaded) {
-//     appOpenAd.show();
-//     appOpenAd.load();
-//   } else {
-//     console.log("App Open Ad not ready");
-//     appOpenAd.load();
-//   }
-// };
+export const showRewardedAd = (adConfig, onReward, onAdFreeUnlock) => {
+  if (!adConfig?.showRewardedAds) {
+    return Promise.reject("Rewarded Ads disabled");
+  }
+
+  return new Promise((resolve, reject) => {
+    try {
+      if (rewardedAd?.loaded) {
+        let earned = false;
+
+        const rewardListener = rewardedAd.addAdEventListener(
+          RewardedAdEventType.EARNED_REWARD,
+          (reward) => {
+            earned = true;
+            if (onReward) onReward(reward);
+            // 15 minutes of ad-free time
+            const until = Date.now() + 15 * 60 * 1000;
+            AsyncStorage.setItem("ad_free_until", until.toString())
+              .then(() => {
+                if (onAdFreeUnlock) onAdFreeUnlock(until);
+              })
+              .catch((err) => console.error("Error setting ad_free_until:", err));
+          }
+        );
+
+        const closeListener = rewardedAd.addAdEventListener(
+          AdEventType.CLOSED,
+          () => {
+            rewardListener();
+            closeListener();
+            rewardedAd.load();
+            if (earned) {
+              resolve(true);
+            } else {
+              reject(new Error("USER_CANCELED"));
+            }
+          }
+        );
+
+        rewardedAd.show();
+      } else {
+        rewardedAd?.load();
+        reject(new Error("Rewarded Ad not loaded yet. Try again later."));
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
 
 // ✅ Banner Ad Component
 export const BannerAdComponent = () => {
   const { adConfig } = useContext(adConfigContext);
+  const { isAdFree } = useContext(adFreeContext);
 
   const [isAdLoaded, setIsAdLoaded] = useState(false);
 
-  if (!adConfig.showBannerAds) return null;
+  if (isAdFree || !adConfig.showBannerAds) return null;
 
   return (
     <View

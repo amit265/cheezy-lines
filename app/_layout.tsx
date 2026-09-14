@@ -42,6 +42,8 @@ import {
   announcementsContext,
   bannersContext,
   themeContext,
+  aiCreditsContext,
+  adFreeContext,
 } from "../context/AppContext";
 
 // Default data from assets
@@ -68,6 +70,8 @@ function AppProviders({ children, values }) {
     dbUpdateValue,
     adConfigValue,
     themeValue,
+    aiCreditsValue,
+    adFreeValue,
   } = values;
 
   return (
@@ -83,8 +87,12 @@ function AppProviders({ children, values }) {
                       <dbUpdateContext.Provider value={dbUpdateValue}>
                         <adConfigContext.Provider value={adConfigValue}>
                           <themeContext.Provider value={themeValue}>
-                            <AdManager />
-                            {children}
+                            <aiCreditsContext.Provider value={aiCreditsValue}>
+                              <adFreeContext.Provider value={adFreeValue}>
+                                <AdManager />
+                                {children}
+                              </adFreeContext.Provider>
+                            </aiCreditsContext.Provider>
                           </themeContext.Provider>
                         </adConfigContext.Provider>
                       </dbUpdateContext.Provider>
@@ -351,6 +359,10 @@ function RootLayout() {
   const [announcements, setAnnouncements] = useState(defaultAnnouncements);
   const [banners, setBanners] = useState(defaultBanners);
   const [themePreference, setThemePreference] = useState("light");
+  
+  // AI Credits & Ad-Free state
+  const [aiCredits, setAiCredits] = useState(5);
+  const [isAdFree, setIsAdFree] = useState(false);
 
   // ── Theme hooks (must be called before early returns) ──
   const themeValue = useMemo(() => ({ themePreference, setThemePreference }), [themePreference]);
@@ -384,6 +396,8 @@ function RootLayout() {
     [announcements]
   );
   const bannersValue = useMemo(() => ({ banners, setBanners }), [banners]);
+  const aiCreditsValue = useMemo(() => ({ aiCredits, setAiCredits }), [aiCredits]);
+  const adFreeValue = useMemo(() => ({ isAdFree, setIsAdFree }), [isAdFree]);
 
   // ── Network monitoring (skip on web — not reliable) ──
   const checkConnection = useCallback(async () => {
@@ -418,13 +432,15 @@ function RootLayout() {
       await localStorage.initializeLocalStorage(defaults);
 
       import("@react-native-async-storage/async-storage").then(async ({ default: AsyncStorage }) => {
+        // Theme
         const storedTheme = await AsyncStorage.getItem("ds_theme_preference");
         if (storedTheme) {
           setThemePreference(storedTheme);
         }
         
-        const isAdFree = await AsyncStorage.getItem("ds_is_ad_free");
-        if (isAdFree === "true") {
+        // Developer Ad-Free (from settings tap)
+        const isDevAdFree = await AsyncStorage.getItem("ds_is_ad_free");
+        if (isDevAdFree === "true") {
           setAdConfig(prev => ({ 
             ...prev, 
             showAds: false, 
@@ -434,6 +450,38 @@ function RootLayout() {
             showBannerAds: false 
           }));
         }
+
+        // Rewarded Ad-Free Timer
+        const adFreeUntilStr = await AsyncStorage.getItem("ad_free_until");
+        if (adFreeUntilStr) {
+          const adFreeUntil = parseInt(adFreeUntilStr, 10);
+          if (Date.now() < adFreeUntil) {
+            setIsAdFree(true);
+            // Automatically clear ad-free state when time expires
+            setTimeout(() => {
+              setIsAdFree(false);
+              AsyncStorage.removeItem("ad_free_until");
+            }, adFreeUntil - Date.now());
+          } else {
+            AsyncStorage.removeItem("ad_free_until");
+          }
+        }
+
+        // AI Credits logic (refill 5 daily)
+        const storedCreditsStr = await AsyncStorage.getItem("ds_ai_credits");
+        let currentCredits = storedCreditsStr !== null ? parseInt(storedCreditsStr, 10) : 5;
+        
+        const lastRefillDate = await AsyncStorage.getItem("last_ai_credit_refill");
+        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+        
+        if (lastRefillDate !== today) {
+          if (currentCredits < 5) {
+            currentCredits = 5;
+          }
+          await AsyncStorage.setItem("last_ai_credit_refill", today);
+        }
+        setAiCredits(currentCredits);
+        await AsyncStorage.setItem("ds_ai_credits", currentCredits.toString());
       });
 
       const cachedConfig = await localStorage.getData(localStorage.KEYS.GLOBAL_CONFIG);
@@ -465,23 +513,6 @@ function RootLayout() {
   // ── Early returns ──
   if (!fontsLoaded) return null;
 
-  if (!isConnected && Platform.OS !== "web") {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#ffcccc",
-        }}
-      >
-        <Text style={{ color: "#ff0000", fontSize: 18, fontWeight: "bold" }}>
-          No Internet Connection 😢
-        </Text>
-      </View>
-    );
-  }
-
   const contextValues = {
     globalConfigValue,
     appsRegistryValue,
@@ -493,6 +524,8 @@ function RootLayout() {
     dbUpdateValue,
     adConfigValue,
     themeValue,
+    aiCreditsValue,
+    adFreeValue,
   };
 
   return (

@@ -1,9 +1,7 @@
-import { Assets } from "@react-navigation/elements";
-import { forwardRef, useEffect, useState } from "react";
-import { ImageBackground, StyleSheet, Text, View } from "react-native";
-
-// This is the blank template image you generated (put it in your assets folder)
-const TEMPLATE_IMAGE = require("../assets/images/template.png");
+import { forwardRef } from "react";
+import { StyleSheet, Text, View, Image } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { useThemeColors } from "../constants/colors";
 
 
 
@@ -12,28 +10,36 @@ const TEMPLATE_IMAGE = require("../assets/images/template.png");
 
 
 const ShareCard = forwardRef(({ text }, ref) => {
-   
+  const colors = useThemeColors();
+  
   return (
     <View
       ref={ref}
       style={styles.container}
       collapsable={false} // Crucial for Android capture
     >
-      <ImageBackground
-        source={TEMPLATE_IMAGE}
-        style={styles.image}
-        resizeMode="cover"
+      <LinearGradient
+        colors={colors.GRADIENT_PRIMARY || ["#FF007F", "#FFA500"]} // Deep pink to vibrant orange (fallback)
+        style={styles.gradientBg}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       >
-        {/* The Text Overlay */}
-        <View style={styles.textContainer}>
-          <Text style={styles.quoteText}>{text}</Text>
+        <View style={styles.glassCard}>
+          <Text style={styles.commaLeft}>❝</Text>
+          <View style={styles.textContainer}>
+            <Text style={styles.quoteText}>{text}</Text>
+          </View>
+          <Text style={styles.commaRight}>❞</Text>
         </View>
 
-        {/* Branding / Footer is already in your image, but we can add more if needed */}
         <View style={styles.watermarkContainer}>
-          <Text style={styles.watermarkText}>● cheesy-lines.app</Text>
+          <Image source={require("../assets/images/icon.png")} style={styles.appIcon} />
+          <View>
+            <Text style={styles.watermarkTitle}>Cheesy Lines</Text>
+            <Text style={styles.watermarkText}>Available on iOS & Android</Text>
+          </View>
         </View>
-      </ImageBackground>
+      </LinearGradient>
     </View>
   );
 });
@@ -51,37 +57,76 @@ const styles = StyleSheet.create({
     top: 0,
     backgroundColor: "#fff",
   },
-  image: {
+  gradientBg: {
     width: "100%",
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
+    padding: 40,
+  },
+  glassCard: {
+    width: "100%",
+    backgroundColor: "rgba(255, 255, 255, 0.15)", // Glass effect
+    borderRadius: 30,
+    padding: 40,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.4)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 15,
+  },
+  commaLeft: {
+    fontFamily: "Poppins-Bold",
+    fontSize: 60,
+    color: "rgba(255, 255, 255, 0.4)",
+    marginBottom: -30,
+  },
+  commaRight: {
+    fontFamily: "Poppins-Bold",
+    fontSize: 60,
+    color: "rgba(255, 255, 255, 0.4)",
+    textAlign: "right",
+    marginTop: -20,
   },
   textContainer: {
-    width: "80%", // Keep text away from edges
-    height: "50%", // Focus text in the middle
+    width: "100%",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: -50, // Scaled down
+    minHeight: 180,
   },
   quoteText: {
-    fontSize: 28, // Scaled down but still very clear
-    color: "#0C1D59", // Dark Navy
+    fontSize: 34,
+    color: "#FFFFFF",
     textAlign: "center",
     fontFamily: "Poppins-Bold",
-    lineHeight: 38,
+    lineHeight: 46,
   },
   watermarkContainer: {
     position: "absolute",
     bottom: 40,
     width: "100%",
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    gap: 15,
+  },
+  appIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 15,
+  },
+  watermarkTitle: {
+    fontSize: 28,
+    color: "#FFFFFF",
+    fontFamily: "Baloo2",
+    marginBottom: -2,
   },
   watermarkText: {
     fontSize: 16,
-    color: "rgba(12, 29, 89, 0.5)",
-    fontFamily: "Poppins-Bold",
-    letterSpacing: 1,
+    color: "rgba(255, 255, 255, 0.8)",
+    fontFamily: "Poppins-Regular",
+    letterSpacing: 0.5,
   },
 });
 

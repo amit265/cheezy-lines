@@ -42,7 +42,7 @@ export const darkTheme = {
 
 export const lightTheme = {
   // Deep Backgrounds
-  BACKGROUND: "#FDF5E6", // Light clean background
+  BACKGROUND: "#FDE9B3", // Light clean background
   DARK_INDIGO: "#E9ECEF",
   
   // Neon Accents (Adapted for light theme)

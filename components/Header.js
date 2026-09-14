@@ -95,10 +95,12 @@ export default function Header() {
   }));
 
   return (
-    <BlurView intensity={50} tint="dark" style={styles.headerContainer}>
-      <Text style={styles.title}>
-        Cheesy Lines
-      </Text>
+    <View style={styles.headerOuter}>
+      <BlurView intensity={50} tint="default" style={styles.headerContainer}>
+        <View style={styles.headerOverlay} />
+        <Text style={styles.title}>
+          Cheesy Lines
+        </Text>
 
       <View style={styles.iconContainer}>
         {/* AI Magic Icon */}
@@ -108,7 +110,7 @@ export default function Header() {
         >
           <Animated.View style={[aiIconStyle, styles.aiWrapper]}>
             <Animated.View style={[styles.absoluteCenter, aiZapStyle]}>
-              <Feather name="zap" size={26} color={colors.ELECTRIC_CYAN} />
+              <Feather name="zap" size={26} color={colors.BRAND_ORANGE} />
             </Animated.View>
             <Animated.View style={[styles.absoluteCenter, aiTextStyle]}>
               <Text style={styles.aiText}>AI</Text>
@@ -136,15 +138,20 @@ export default function Header() {
           }}
         >
           <Animated.View style={settingsStyle}>
-            <Feather name="settings" size={26} color="#FFF" />
+            <Feather name="settings" size={26} color="#5D4037" />
           </Animated.View>
         </TouchableOpacity>
       </View>
     </BlurView>
+  </View>
   );
 }
 
 const styles = StyleSheet.create({
+  headerOuter: {
+    width: "100%",
+    alignItems: "center",
+  },
   headerContainer: {
     display: "flex",
     flexDirection: "row",
@@ -155,15 +162,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 30,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.15)",
+    borderColor: "rgba(0,0,0,0.05)",
     overflow: "hidden",
     marginTop: 10,
     marginBottom: 10,
   },
+  headerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(253, 233, 179, 0.4)", // colors.BACKGROUND with opacity
+    zIndex: -1,
+  },
   title: {
-    fontFamily: "Outfit-Bold",
-    fontSize: 22,
-    color: "#FFF",
+    fontFamily: "Baloo2",
+    fontSize: 26,
+    color: "#5D4037",
   },
   iconContainer: {
     display: "flex",
@@ -181,9 +193,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   aiText: {
-    fontFamily: 'Outfit-Bold',
+    fontFamily: 'Poppins-Bold',
     fontSize: 12,
-    color: colors.ELECTRIC_CYAN,
+    color: colors.BRAND_ORANGE,
     letterSpacing: 1,
   },
 });

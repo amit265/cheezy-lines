@@ -20,9 +20,12 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import CrossPromoHub from "../components/CrossPromoHub";
+import CustomAlert from "../components/CustomAlert";
 import { useThemeColors } from "../constants/colors";
-import { BannerAdComponent } from "../services/AdManager";
-import { globalConfigContext, themeContext, adConfigContext } from "../context/AppContext";
+import { BannerAdComponent, showRewardedAd, getAdUnitId } from "../services/AdManager";
+import InlineNativeAd from "../components/InlineNativeAd";
+import { globalConfigContext, themeContext, adConfigContext, aiCreditsContext, adFreeContext } from "../context/AppContext";
+import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
@@ -33,8 +36,25 @@ export default function Settings() {
   const { globalConfig } = useContext(globalConfigContext);
   const { themePreference, setThemePreference } = useContext(themeContext);
   const { adConfig, setAdConfig } = useContext(adConfigContext);
+  const { aiCredits, setAiCredits } = useContext(aiCreditsContext);
+  const { isAdFree, setIsAdFree } = useContext(adFreeContext);
   const colors = useThemeColors();
   
+  const [hasCustomKey, setHasCustomKey] = React.useState(false);
+  const [alertConfig, setAlertConfig] = React.useState(null);
+
+  React.useEffect(() => {
+    const checkCustomKey = async () => {
+      try {
+        const key = await SecureStore.getItemAsync("ds_custom_groq_api_key");
+        setHasCustomKey(!!key);
+      } catch (e) {
+        setHasCustomKey(false);
+      }
+    };
+    checkCustomKey();
+  }, []);
+
   // Developer tap logic
   const devTapCount = React.useRef(0);
   const lastDevTapTime = React.useRef(0);
@@ -134,6 +154,20 @@ export default function Settings() {
       fontSize: 12,
       color: colors.MUTED,
     },
+    actionBtn: {
+      backgroundColor: colors.BRAND_ORANGE + "20",
+      paddingVertical: 14,
+      paddingHorizontal: 20,
+      borderRadius: 16,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    actionBtnText: {
+      fontFamily: "Poppins-Bold",
+      fontSize: 14,
+      color: colors.BRAND_ORANGE,
+    },
     divider: {
       height: 1,
       backgroundColor: colors.CARD_BORDER,
@@ -194,7 +228,7 @@ export default function Settings() {
     try {
       const result = await Share.share({
         message:
-          `Check out this amazing app!\n\n${globalConfig?.socialLinks?.playStore || "https://destyastudio.com/products/cheezylines"}`,
+          `Check out this amazing app!\n\nAndroid: https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines\niOS: https://apps.apple.com/us/developer/destya-eka-capricornesia/id1879262455`,
       });
 
       if (result.action === Share.sharedAction) {
@@ -231,6 +265,14 @@ export default function Settings() {
       iconSize: 22,
     },
     {
+      key: "terms",
+      label: "Terms of Service",
+      hint: "Read our End User License Agreement.",
+      iconFamily: MaterialIcons,
+      iconName: "gavel",
+      iconSize: 22,
+    },
+    {
       key: "reviews",
       label: "Rate and Review",
       hint: "Help others discover the app.",
@@ -244,6 +286,7 @@ export default function Settings() {
     if (key === "share") return handleShare();
     if (key === "contact") return handleContactUs();
     if (key === "privacy") return Linking.openURL(`${globalConfig?.legal?.privacyBaseUrl}/cheezylines/privacy` || "https://mindcraftlearning.github.io/cheezy-lines");
+    if (key === "terms") return Linking.openURL(`${globalConfig?.legal?.termsBaseUrl}/cheezylines/terms` || "https://mindcraftlearning.github.io/cheezy-lines");
     if (key === "reviews") return Linking.openURL(globalConfig?.socialLinks?.playStore || "https://destyastudio.com/products/cheezylines");
   };
 
@@ -252,8 +295,73 @@ export default function Settings() {
     return <IconComponent name={item.iconName} size={item.iconSize} color={color} />;
   };
 
+  const handleWatchAdForCredit = async () => {
+    setAlertConfig({
+      title: "Earn AI Credits",
+      message: "Would you like to watch a short video ad to earn 2 AI Credits and unlock 15 minutes of ad-free play?",
+      buttons: [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Watch Ad",
+          onPress: async () => {
+            try {
+              await showRewardedAd(
+                adConfig,
+                () => {
+                  const newCredits = Math.min(20, aiCredits + 2);
+                  setAiCredits(newCredits);
+                  AsyncStorage.setItem("ds_ai_credits", newCredits.toString());
+                  setAlertConfig({ title: "Success", message: "You earned +2 AI Credits and 15m ad-free play!" });
+                },
+                (until) => {
+                  setIsAdFree(true);
+                  setTimeout(() => setIsAdFree(false), until - Date.now());
+                }
+              );
+            } catch (error) {
+              if (error.message !== "USER_CANCELED") {
+                setAlertConfig({ title: "Error", message: error.message });
+              }
+            }
+          },
+        },
+      ]
+    });
+  };
+
+  const handleWatchAdForAdFree = async () => {
+    setAlertConfig({
+      title: "Go Ad-Free",
+      message: "Would you like to watch a short video ad to disable interrupting ads for the next 15 minutes?",
+      buttons: [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Watch Ad",
+          onPress: async () => {
+            try {
+              await showRewardedAd(
+                adConfig,
+                () => {
+                  setAlertConfig({ title: "Success", message: "Interrupting ads disabled for 15 minutes!" });
+                },
+                (until) => {
+                  setIsAdFree(true);
+                  setTimeout(() => setIsAdFree(false), until - Date.now());
+                }
+              );
+            } catch (error) {
+              if (error.message !== "USER_CANCELED") {
+                setAlertConfig({ title: "Error", message: error.message });
+              }
+            }
+          },
+        },
+      ]
+    });
+  };
+
   return (
-    <LinearGradient colors={[colors.BACKGROUND, colors.DARK_INDIGO]} style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: colors.BACKGROUND }]}>
       <SafeAreaView
         style={[styles.safeArea, { paddingTop: insets.top + 8 }]}
         edges={["left", "right"]}
@@ -276,11 +384,50 @@ export default function Settings() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Custom AI Settings */}
+          {/* Custom AI Settings & Credits */}
           <View style={styles.panel}>
-            <Text style={styles.sectionTitle}>
-              Advanced Features
-            </Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>
+                AI Magic
+              </Text>
+              <Text style={{ fontFamily: "Poppins-Bold", color: colors.BRAND_ORANGE }}>
+                {hasCustomKey ? "Unlimited ✨" : `${aiCredits} Credits left`}
+              </Text>
+            </View>
+
+            <View style={{ gap: 10, marginBottom: 15 }}>
+              <TouchableOpacity
+                style={[styles.actionBtn, aiCredits >= 20 && { opacity: 0.5 }]}
+                disabled={aiCredits >= 20}
+                onPress={handleWatchAdForCredit}
+                activeOpacity={0.8}
+              >
+                <View>
+                  <Text style={styles.actionBtnText}>Watch Ad (+2 AI Credits)</Text>
+                  <Text style={[styles.hint, { color: colors.BRAND_ORANGE, marginTop: 2 }]}>
+                    Includes 15m ad-free play
+                  </Text>
+                </View>
+                <Feather name="video" size={20} color={colors.BRAND_ORANGE} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.actionBtn, isAdFree && { opacity: 0.5 }]}
+                disabled={isAdFree}
+                onPress={handleWatchAdForAdFree}
+                activeOpacity={0.8}
+              >
+                <View>
+                  <Text style={styles.actionBtnText}>{isAdFree ? "Ad-Free Active ✨" : "Watch Ad (15m Ad-Free)"}</Text>
+                  <Text style={[styles.hint, { color: colors.BRAND_ORANGE, marginTop: 2 }]}>
+                    Stops interrupting ads
+                  </Text>
+                </View>
+                <Feather name="clock" size={20} color={colors.BRAND_ORANGE} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.divider} />
             <TouchableOpacity
               style={styles.settingRow}
               onPress={() => router.push("/ai-settings")}
@@ -320,6 +467,11 @@ export default function Settings() {
               })}
             </View>
           </View>
+
+          {/* Settings Inline Native Ad */}
+          {adConfig?.showBannerAds && (
+            <InlineNativeAd adConfig={adConfig} containerStyle={{ marginBottom: 20 }} />
+          )}
 
           {/* Support and About */}
           <View style={styles.panel}>
@@ -395,6 +547,13 @@ export default function Settings() {
           <BannerAdComponent />
         </View>
       </SafeAreaView>
-    </LinearGradient>
+      <CustomAlert 
+        visible={!!alertConfig} 
+        title={alertConfig?.title}
+        message={alertConfig?.message}
+        buttons={alertConfig?.buttons || []}
+        onClose={() => setAlertConfig(null)}
+      />
+    </View>
   );
 }

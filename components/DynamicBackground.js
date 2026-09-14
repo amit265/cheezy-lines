@@ -105,19 +105,19 @@ export default function DynamicBackground({ children }) {
       width: width * 0.8,
       height: width * 0.8,
       backgroundColor: colors.NEON_PINK,
-      opacity: 0.4,
+      opacity: 0.15,
     },
     orb2: {
       width: width * 0.9,
       height: width * 0.9,
       backgroundColor: colors.ELECTRIC_CYAN,
-      opacity: 0.3,
+      opacity: 0.15,
     },
     orb3: {
       width: width * 0.7,
       height: width * 0.7,
       backgroundColor: colors.BRAND_ORANGE,
-      opacity: 0.35,
+      opacity: 0.2,
     },
     blurLayer: {
       ...StyleSheet.absoluteFillObject,
@@ -135,7 +135,7 @@ export default function DynamicBackground({ children }) {
         <Animated.View style={[styles.orb, styles.orb2, orb2Style]} />
         <Animated.View style={[styles.orb, styles.orb3, orb3Style]} />
       </View>
-      <BlurView intensity={80} tint={colorScheme === 'dark' ? "dark" : "light"} style={styles.blurLayer} />
+      <BlurView intensity={80} tint="default" style={styles.blurLayer} />
       <View style={styles.contentLayer}>{children}</View>
     </View>
   );

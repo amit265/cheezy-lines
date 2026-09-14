@@ -47,7 +47,7 @@ const AdCard = ({ unitId, isTopCard, colors }) => {
       !adLoaded && { opacity: 0 },
     ]}>
       {adLoaded && isTopCard && (
-        <Text style={{ fontFamily: "Outfit-Bold", color: "rgba(255,255,255,0.5)", fontSize: 11, marginBottom: 10 }}>
+        <Text style={{ fontFamily: "Poppins-Bold", color: "rgba(255,255,255,0.5)", fontSize: 11, marginBottom: 10 }}>
           Sponsored
         </Text>
       )}
@@ -201,7 +201,7 @@ export default function SwipeDeck({ card }) {
     }
 
     const currentId = currentCard.id || currentIndex;
-    const captionText = `${currentCardText}\n\nGet more Cheesy Lines: https://destyastudio.com/products/cheezylines?lineId=${currentId}`;
+    const captionText = `${currentCardText}\n\nGet more Cheesy Lines:\nAndroid: https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines\niOS: https://apps.apple.com/us/developer/destya-eka-capricornesia/id1879262455`;
     try {
       await Clipboard.setStringAsync(captionText);
       setTimeout(async () => {
@@ -286,7 +286,7 @@ export default function SwipeDeck({ card }) {
               position: "absolute",
               right: -10,
               top: -10,
-              fontFamily: "Outfit-Regular",
+              fontFamily: "Poppins-Regular",
               color: colors.TEXT_MUTED,
               zIndex: 10,
             }}
@@ -345,39 +345,50 @@ export default function SwipeDeck({ card }) {
       fontSize: 22,
       textAlign: "center",
       color: colors.TEXT,
-      fontFamily: "Playfair-Bold",
+      fontFamily: "Poppins-Bold",
       lineHeight: 32,
     },
     buttonsContainer: {
       flexDirection: "row",
-      justifyContent: "space-evenly",
-      alignItems: "center",
-      marginBottom: 40,
-    },
-    button: {
-      width: 64,
-      height: 64,
-      borderRadius: 32,
       justifyContent: "center",
       alignItems: "center",
-      elevation: 4,
+      gap: 20,
+      marginBottom: 30,
+    },
+    button: {
+      justifyContent: "center",
+      alignItems: "center",
+      elevation: 6,
       shadowColor: "#000",
-      shadowOffset: { width: 0, height: 4 },
+      shadowOffset: { width: 0, height: 6 },
       shadowOpacity: 0.15,
-      shadowRadius: 8,
+      shadowRadius: 10,
     },
     dislikeButton: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
       backgroundColor: colors.CARD_BG,
       borderColor: colors.CARD_BORDER,
       borderWidth: 1,
     },
     likeButton: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
       backgroundColor: colors.BRAND_ORANGE,
+      shadowColor: colors.BRAND_ORANGE,
+      shadowOpacity: 0.4,
+      shadowRadius: 15,
+      elevation: 10,
     },
     buttonText: {
       fontSize: 30,
     },
     shareButton: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
       backgroundColor: colors.CARD_BG,
       borderColor: colors.CARD_BORDER,
       borderWidth: 1,
@@ -385,7 +396,7 @@ export default function SwipeDeck({ card }) {
     // Finished Screen Styles
     finishedTitle: {
       fontSize: 28,
-      fontFamily: "Playfair-Bold",
+      fontFamily: "Poppins-Bold",
       color: colors.TEXT,
       marginBottom: 10,
       textAlign: "center",
@@ -393,7 +404,7 @@ export default function SwipeDeck({ card }) {
     finishedSubtitle: {
       fontSize: 16,
       color: colors.TEXT_MUTED,
-      fontFamily: "Outfit-Regular",
+      fontFamily: "Poppins-Regular",
       marginBottom: 40,
       textAlign: "center",
     },
@@ -417,7 +428,7 @@ export default function SwipeDeck({ card }) {
     },
     actionButtonText: {
       fontSize: 16,
-      fontFamily: "Outfit-Bold",
+      fontFamily: "Poppins-Bold",
       color: "#FFF",
     },
   }), [colors]);
@@ -504,7 +515,7 @@ export default function SwipeDeck({ card }) {
                   color: colors.NEON_PINK,
                   borderWidth: 2,
                   textAlign: "right",
-                  fontFamily: "Outfit-Bold",
+                  fontFamily: "Poppins-Bold",
                 },
               },
             },
@@ -515,7 +526,7 @@ export default function SwipeDeck({ card }) {
                   borderColor: colors.ELECTRIC_CYAN, 
                   color: colors.ELECTRIC_CYAN, 
                   borderWidth: 2,
-                  fontFamily: "Outfit-Bold",
+                  fontFamily: "Poppins-Bold",
                 },
               },
             },
@@ -533,7 +544,7 @@ export default function SwipeDeck({ card }) {
             swiperRef.current.swipeLeft();
           }}
         >
-          <Feather name="x" size={32} color={colors.TEXT} />
+          <Feather name="x" size={26} color={colors.TEXT} />
         </BouncyButton>
 
         <BouncyButton
@@ -543,7 +554,7 @@ export default function SwipeDeck({ card }) {
             swiperRef.current.swipeRight();
           }}
         >
-          <Feather name="heart" size={28} color="#FFF" />
+          <Feather name="heart" size={36} color="#FFF" />
         </BouncyButton>
 
         <BouncyButton
@@ -554,7 +565,7 @@ export default function SwipeDeck({ card }) {
           {isSharing ? (
             <ActivityIndicator size="small" color={colors.TEXT} />
           ) : (
-            <Feather name="send" size={28} color={colors.TEXT} />
+            <Feather name="send" size={24} color={colors.TEXT} />
           )}
         </BouncyButton>
       </View>

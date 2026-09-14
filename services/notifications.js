@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Configure how notifications behave when the app is in the foreground
 Notifications.setNotificationHandler({
@@ -28,19 +29,16 @@ export const scheduleDailyReminder = async () => {
       return;
     }
 
-    // Check if it's already scheduled to avoid stacking and instant firing on app load
-    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
-    const alreadyScheduled = scheduled.some(
-      (notif) => notif.content.title === "Ready for your daily cheesy line? 🧀"
-    );
-    
-    if (alreadyScheduled) {
-      // console.log("Daily notification already scheduled.");
+    // Ensure we only schedule this once per install to avoid the Android bug
+    // where re-scheduling a recurring alarm for a time in the past fires immediately
+    const hasScheduled = await AsyncStorage.getItem("daily_notification_scheduled");
+    if (hasScheduled === "true") {
       return;
     }
 
     // Schedule daily notification at 7 PM
     await Notifications.scheduleNotificationAsync({
+      identifier: "daily-cheesy-reminder",
       content: {
         title: "Ready for your daily cheesy line? 🧀",
         body: "Unlock new cheesy lines to share tonight!",
@@ -52,7 +50,7 @@ export const scheduleDailyReminder = async () => {
       },
     });
     
-    // console.log("Scheduled daily reminder for 7 PM");
+    await AsyncStorage.setItem("daily_notification_scheduled", "true");
   } catch (err) {
     console.log("Failed to schedule notifications", err);
   }

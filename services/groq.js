@@ -33,15 +33,12 @@ Generate exactly ONE cheesy pickup line based on the user's prompt.
 Keep it extremely short, punchy, and under 20 words. 
 Do NOT include hashtags, emojis, or explanations. Just the pickup line itself.`;
 
-  // Verified active chat models available on your account (copied from question-games)
+  // Verified active chat models available on Groq
   const fallbackModels = [
-    "llama-3.1-8b-instant",
-    "llama-3.3-70b-versatile",
-    "openai/gpt-oss-120b",
-    "openai/gpt-oss-20b",
-    "qwen/qwen3.8-27b",
-    "qwen/qwen3.6-27b",
-    "groq/compound",
+    "llama3-8b-8192",
+    "llama3-70b-8192",
+    "mixtral-8x7b-32768",
+    "gemma2-9b-it"
   ];
 
   let lastStatus = 0;

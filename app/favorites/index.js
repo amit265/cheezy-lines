@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useMemo } from "react";
 import {
   Pressable,
   StyleSheet,
@@ -13,8 +13,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import LineCard from "../../components/LineCard";
 import colors from "../../constants/colors";
-import { favoritesContext } from "../../context/AppContext";
-import { BannerAdComponent } from "../../services/AdManager";
+import { favoritesContext, adConfigContext } from "../../context/AppContext";
+import { BannerAdComponent, getAdUnitId } from "../../services/AdManager";
+import InlineNativeAd from "../../components/InlineNativeAd";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -50,7 +51,21 @@ const AnimatedItem = ({ children, index }) => {
 export default function Index() {
   const router = useRouter();
   const { favorites, setFavorites } = useContext(favoritesContext);
+  const { adConfig } = useContext(adConfigContext);
   const [refreshing, setRefreshing] = useState(false);
+
+  const favoritesWithAds = useMemo(() => {
+    if (!favorites || favorites.length === 0) return [];
+    const newFavs = [];
+    favorites.forEach((fav, index) => {
+      newFavs.push(fav);
+      // Inject an ad every 5 favorites
+      if ((index + 1) % 5 === 0 && index !== favorites.length - 1) {
+        newFavs.push({ id: `ad-${index}`, isAd: true });
+      }
+    });
+    return newFavs;
+  }, [favorites]);
 
   // --- HEADER ANIMATION STATE ---
   const headerSlide = useSharedValue(-50);
@@ -98,13 +113,23 @@ export default function Index() {
     }, 1000);
   };
 
-  const renderItem = ({ item, index }) => (
-    <AnimatedItem index={index}>
-      <View>
-        <LineCard lines={item} />
-      </View>
-    </AnimatedItem>
-  );
+  const renderItem = ({ item, index }) => {
+    if (item.isAd) {
+      return (
+        <AnimatedItem index={index}>
+          <InlineNativeAd adConfig={adConfig} containerStyle={{ margin: 16 }} />
+        </AnimatedItem>
+      );
+    }
+
+    return (
+      <AnimatedItem index={index}>
+        <View>
+          <LineCard lines={item} />
+        </View>
+      </AnimatedItem>
+    );
+  };
 
   const headerStyle = useAnimatedStyle(() => ({
     opacity: headerFade.value,
@@ -129,7 +154,9 @@ export default function Index() {
             <Ionicons name="arrow-back-sharp" size={36} color="black" />
           </Animated.View>
         </Pressable>
-        <Text style={styles.headerText}>Favorites</Text>
+        <Text style={styles.headerText}>
+          Favorites {favorites?.length > 0 ? `(${favorites.length})` : ""}
+        </Text>
       </Animated.View>
 
       {/* Content Area */}
@@ -155,7 +182,7 @@ export default function Index() {
       ) : (
         <View style={{ flex: 1, width: "100%" }}>
           <FlashList
-            data={favorites}
+            data={favoritesWithAds}
             renderItem={renderItem}
             keyExtractor={(item, index) => `${item?.id}-${index}`}
             contentContainerStyle={{ paddingBottom: 60 }}
