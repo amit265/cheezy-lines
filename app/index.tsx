@@ -2,7 +2,6 @@ import colors from "@/constants/colors";
 import { adConfigContext, dataContext, favoritesContext } from "@/context/AppContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SplashScreen } from "expo-router";
-import { collection, doc, getDocs, onSnapshot } from "firebase/firestore";
 import { useContext, useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -11,8 +10,6 @@ import Header from "../components/Header";
 import SplashScreenComponent from "../components/SplashScreenComponent";
 import TopicButton from "../components/TopicButton";
 import { BannerAdComponent, showInterstitialAd } from "../services/AdManager";
-import { db } from "../services/firebaseConfig";
-import { syncDataWithFirebase } from "../services/syncDataWithFirebase";
 
 export default function Index() {
   const [showSplash, setShowSplash] = useState(true);
@@ -23,19 +20,11 @@ export default function Index() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    // Simulate network request or pull new Firebase snapshot explicitly if needed
-    syncDataWithFirebase();
+    // Simulate network request
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
   };
-
-  useEffect(() => {
-    // We can still call syncDataWithFirebase here if we want to ensure it's running when Index is mounted
-    // though RootLayout might be a better place for it if we want it global.
-    // For now, let's keep it here but remove the initial fetch logic since RootLayout already does it.
-    syncDataWithFirebase();
-  }, []);
 
   useEffect(() => {
     async function prepare() {
@@ -57,26 +46,7 @@ export default function Index() {
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    let unsubscribe;
-    const fetchAdSettings = () => {
-      try {
-        unsubscribe = onSnapshot(
-          doc(db, 'config', 'adSettings'),
-          (doc) => {
-            if (doc.exists()) {
-              setAdConfig(doc.data());
-            }
-          },
-          (error) => {}
-        );
-      } catch (error) {}
-    };
-    fetchAdSettings();
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, []);
+
 
   useEffect(() => {
     const loadFavorites = async () => {

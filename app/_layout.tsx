@@ -28,7 +28,7 @@ import MobileAds from "../components/MobileAdsProxy";
 import AdManager from "../services/AdManager";
 import localStorage from "@/services/localStorage";
 import { sampleTopics } from "@/constants/topics";
-import { syncGlobalDataWithFirebase } from "../services/syncGlobalDataWithFirebase";
+import { sampleTopics } from "@/constants/topics";
 import useUpdateChecker from "../hooks/useUpdateChecker";
 import useDeepLinkHandler from "../hooks/useDeepLinkHandler";
 import { scheduleDailyReminder } from "../services/notifications";
@@ -348,6 +348,10 @@ function RootLayout() {
   const [announcements, setAnnouncements] = useState(defaultAnnouncements);
   const [banners, setBanners] = useState(defaultBanners);
 
+  // ── Theme hooks (must be called before early returns) ──
+  const colors = useThemeColors();
+  const colorScheme = useColorScheme();
+
   // ── Memoized context values ──
   const dbUpdateValue = useMemo(() => ({ dbUpdate, setUpdate }), [dbUpdate]);
   const adConfigValue = useMemo(
@@ -392,10 +396,8 @@ function RootLayout() {
     return () => subscription && subscription.remove();
   }, []);
 
-  // ── Initialize local storage & Firebase sync ──
+  // ── Initialize local storage ──
   useEffect(() => {
-    let unsubscribeGlobal: (() => void) | undefined;
-
     const initData = async () => {
       const defaults = {
         [localStorage.KEYS.GLOBAL_CONFIG]: defaultConfig,
@@ -421,12 +423,9 @@ function RootLayout() {
       if (cachedAnnouncements) setAnnouncements(cachedAnnouncements);
       if (cachedBanners) setBanners(cachedBanners);
       if (cachedData) setData(cachedData);
-
-      unsubscribeGlobal = syncGlobalDataWithFirebase();
     };
 
     initData();
-    return () => { if (unsubscribeGlobal) unsubscribeGlobal(); };
   }, []);
 
   // ── Initialize Mobile Ads (native only) ──
@@ -468,9 +467,6 @@ function RootLayout() {
     dbUpdateValue,
     adConfigValue,
   };
-
-  const colors = useThemeColors();
-  const colorScheme = useColorScheme();
 
   return (
     <ErrorBoundary
