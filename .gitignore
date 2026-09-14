@@ -89,3 +89,4 @@ build/
 google-services-key.json
 google-service-account*.json
 expo-apps-submissions*.json
+*.aab
