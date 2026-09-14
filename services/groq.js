@@ -33,12 +33,11 @@ Generate exactly ONE cheesy pickup line based on the user's prompt.
 Keep it extremely short, punchy, and under 20 words. 
 Do NOT include hashtags, emojis, or explanations. Just the pickup line itself.`;
 
-  // Verified active chat models available on Groq
+  // Verified active chat models mapped specifically to your API key's permissions
   const fallbackModels = [
-    "llama3-8b-8192",
-    "llama3-70b-8192",
-    "mixtral-8x7b-32768",
-    "gemma2-9b-it"
+    "openai/gpt-oss-20b",
+    "qwen/qwen3.8-27b",
+    "groq/compound"
   ];
 
   let lastStatus = 0;
@@ -78,16 +77,11 @@ Do NOT include hashtags, emojis, or explanations. Just the pickup line itself.`;
         }
       } else {
         lastErrorMsg = await response.text();
-        console.warn(`Model ${modelName} failed (${response.status}):`, lastErrorMsg);
       }
     } catch (error) {
-      console.warn(`Network/Fetch error on ${modelName}:`, error?.message);
+      lastErrorMsg = error?.message;
     }
   }
 
-  if (lastErrorMsg) {
-    console.error("All AI models failed. Last error:", lastErrorMsg);
-  }
-
-  throw new Error("Spark is taking a quick breath. Tap Try Again to generate!");
+  throw new Error("Our AI is feeling a bit shy right now. Tap Try Again to generate a fresh cheesy line!");
 };

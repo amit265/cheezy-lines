@@ -2,7 +2,7 @@
   "expo": {
     "name": "Cheezy Lines",
     "slug": "cheezy-lines",
-    "version": "1.1.7",
+    "version": "1.1.8",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "cheezylines",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mindcraftlearning.cheezylines",
+      "bundleIdentifier": "com.destyastudio.cheezylines",
       "infoPlist": {
         "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you.",
         "NSPhotoLibraryUsageDescription": "Allows you to save and share cheesy lines as images.",
@@ -100,7 +100,8 @@
       "./plugins/withAndroidForceCoreSdk.js",
       "@sentry/react-native",
       "expo-secure-store",
-      "expo-tracking-transparency"
+      "expo-tracking-transparency",
+      "./withIosFmtWorkaround.js"
     ],
     "experiments": {
       "typedRoutes": true
