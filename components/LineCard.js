@@ -16,6 +16,7 @@ import RNShare from "./ShareProxy";
 import { captureRef } from "react-native-view-shot";
 import { favoritesContext } from "../context/AppContext";
 import ShareCard from "./ShareCard";
+import colors from "../constants/colors";
 import { triggerStoreReview } from "../services/storeReview";
 import useAnalytics from "../services/useAnalytics";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withSequence, runOnJS } from "react-native-reanimated";
@@ -172,9 +173,9 @@ export default function LineCard({ lines }) {
       <View style={styles.buttonRow}>
         {/* Favorite Button with Special Pop Animation Wrapper */}
         <Animated.View style={heartStyle}>
-           <BouncyIconButton
+          <BouncyIconButton
             icon={isFavorite ? "close" : "heart-outline"} // Keeping your logic (close if favorite)
-            color={isFavorite ? "#E53935" : "#000"} // Added Red color if it's a remove action
+            color={isFavorite ? colors.BRAND_ORANGE : "#000"} // Orange when favorite
             onPress={addFavorite}
           />
         </Animated.View>
@@ -206,28 +207,28 @@ export default function LineCard({ lines }) {
 const styles = StyleSheet.create({
   card: {
     margin: 16,
-    backgroundColor: "#fff",
+    backgroundColor: "#FAFAFA",
     borderRadius: 26,
     overflow: "hidden",
-    elevation: 4,
+    elevation: 8,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
   },
   textContainer: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FAFAFA",
     padding: 16,
     minHeight: 250,
     justifyContent: "center",
   },
   text: {
-    fontSize: 18,
+    fontSize: 22,
     color: "#000",
     textAlign: "center",
-    fontFamily: "Poppins-Regular",
+    fontFamily: "Poppins-Bold",
     paddingHorizontal: 20,
-    lineHeight: 28,
+    lineHeight: 32,
   },
   buttonRow: {
     flexDirection: "row",

@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useContext } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DynamicBackground from "../../components/DynamicBackground";
 import SwipeDeck from "../../components/SwipeDeck";
 import colors from "../../constants/colors";
 import { adConfigContext } from "../../context/AppContext";
@@ -18,12 +19,13 @@ export default function Topic() {
   const lines = data?.lines || [];
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.headerContainer}>
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Ionicons name="arrow-back-sharp" size={36} color="black" />
-        </Pressable>
+    <DynamicBackground>
+      <SafeAreaView style={styles.safeArea}>
+        {/* Header */}
+        <View style={styles.headerContainer}>
+          <Pressable onPress={() => router.back()} hitSlop={10}>
+            <Ionicons name="arrow-back-sharp" size={36} color="white" />
+          </Pressable>
         
         <Text style={styles.headerText}>{data?.title}</Text>
       </View>
@@ -35,14 +37,17 @@ export default function Topic() {
       
       {/* Banner Ad */}
       {adConfig?.showBannerAds && <BannerAdComponent />}
-    </SafeAreaView>
+      </SafeAreaView>
+    </DynamicBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.BACKGROUND,
+  },
+  safeArea: {
+    flex: 1,
     alignItems: "center",
   },
   headerContainer: {
@@ -54,15 +59,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     alignItems: "center",
     zIndex: 10,
+    borderColor: "rgba(255,255,255,0.1)",
   },
   content: {
     flex: 1,
     width: "100%",
-    backgroundColor: colors.BACKGROUND,
     justifyContent: "center",
   },
   headerText: {
-    color: "#000",
+    color: "#FFF",
     fontSize: 26,
     fontFamily: "Poppins-Bold",
     textAlign: "left",

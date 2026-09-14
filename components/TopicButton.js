@@ -3,6 +3,8 @@ import { useRouter } from "expo-router";
 import React, { useContext, useEffect, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View, RefreshControl } from "react-native";
 import { FlashList } from "@shopify/flash-list";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -12,6 +14,18 @@ import Animated, {
   withRepeat,
   withSequence,
 } from "react-native-reanimated";
+
+const topicImages = {
+  coffee: "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=600&auto=format&fit=crop",
+  bar: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop",
+  smooth: "https://images.unsplash.com/photo-1518599904199-0ca897819ddb?q=80&w=600&auto=format&fit=crop",
+  funny: "https://images.unsplash.com/photo-1543789648-5221b369528d?q=80&w=600&auto=format&fit=crop",
+  nerd: "https://images.unsplash.com/photo-1522881113591-420042f4c475?q=80&w=600&auto=format&fit=crop",
+  gym: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=600&auto=format&fit=crop",
+  cute: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=600&auto=format&fit=crop",
+  dirty: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=600&auto=format&fit=crop",
+  default: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=600&auto=format&fit=crop"
+};
 
 const SkeletonCard = ({ isLeftColumn, itemMargin }) => {
   const opacity = useSharedValue(0.4);
@@ -30,9 +44,11 @@ const SkeletonCard = ({ isLeftColumn, itemMargin }) => {
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
     flex: 1,
-    height: 160,
-    backgroundColor: "#E5E5E5",
-    borderRadius: 20,
+    height: 200,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderColor: "rgba(255,255,255,0.05)",
+    borderWidth: 1,
+    borderRadius: 24,
     marginRight: isLeftColumn ? itemMargin / 2 : 0,
     marginLeft: isLeftColumn ? 0 : itemMargin / 2,
     marginBottom: 10,
@@ -55,13 +71,13 @@ const AnimatedCard = ({
   useEffect(() => {
     if (index !== undefined) {
       const delay = index * 50;
-      opacityAnim.value = withDelay(delay, withTiming(1, { duration: 400 }));
-      slideAnim.value = withDelay(delay, withSpring(0, { damping: 10, stiffness: 100 }));
+      opacityAnim.value = withDelay(delay, withTiming(1, { duration: 500 }));
+      slideAnim.value = withDelay(delay, withSpring(0, { damping: 12, stiffness: 90 }));
     }
   }, [index, slideAnim, opacityAnim]);
 
   const handlePressIn = () => {
-    scaleAnim.value = withSpring(0.92, { damping: 15, stiffness: 300 });
+    scaleAnim.value = withSpring(0.95, { damping: 15, stiffness: 300 });
   };
 
   const handlePressOut = () => {
@@ -72,11 +88,19 @@ const AnimatedCard = ({
     return {
       transform: [{ translateY: slideAnim.value }, { scale: scaleAnim.value }],
       opacity: opacityAnim.value,
-      flex: 1, // Let FlashList handle the exact widths based on numColumns
+      flex: 1,
       marginRight: isLeftColumn ? itemMargin / 2 : 0,
       marginLeft: isLeftColumn ? 0 : itemMargin / 2,
       marginBottom: 10,
     };
+  });
+
+  const titleKey = item?.title?.toLowerCase() || "";
+  let imageUrl = topicImages.default;
+  Object.keys(topicImages).forEach(key => {
+    if (titleKey.includes(key) || item?.id?.toLowerCase().includes(key)) {
+      imageUrl = topicImages[key];
+    }
   });
 
   return (
@@ -85,9 +109,21 @@ const AnimatedCard = ({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={onPress}
-        style={[styles.itemContainer, { backgroundColor: item?.color || "#FDE9B3" }]}
+        style={styles.itemContainer}
       >
-        <Text style={styles.buttonText}>{item?.title || ""}</Text>
+        <Image
+          source={{ uri: imageUrl }}
+          style={StyleSheet.absoluteFillObject}
+          contentFit="cover"
+          transition={500}
+        />
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.8)']}
+          style={StyleSheet.absoluteFillObject}
+        />
+        <View style={styles.textContainer}>
+          <Text style={styles.buttonText}>{item?.title || ""}</Text>
+        </View>
       </Pressable>
     </Animated.View>
   );
@@ -109,7 +145,7 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
           numColumns={2}
           keyExtractor={(_, index) => `skeleton-${index}`}
           contentContainerStyle={styles.content}
-          estimatedItemSize={150}
+          estimatedItemSize={200}
         />
       </View>
     );
@@ -146,7 +182,7 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
         keyExtractor={(item, index) => `${item?.id}-${index}`}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        estimatedItemSize={150}
+        estimatedItemSize={200}
         refreshControl={
           <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} tintColor="#FFA500" />
         }
@@ -164,22 +200,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   itemContainer: {
-    height: 160,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
+    height: 200, // Taller cards for editorial look
+    borderRadius: 24,
     width: "100%",
-    padding: 15,
+    overflow: "hidden",
+    borderColor: "rgba(255,255,255,0.15)",
+    borderWidth: 1,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+    elevation: 10,
+  },
+  textContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "flex-end",
+    padding: 15,
   },
   buttonText: {
-    color: "#333",
-    fontSize: 15,
-    fontFamily: "Poppins-Bold",
-    textAlign: "center",
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontFamily: "Outfit-Bold",
+    letterSpacing: 0.5,
   },
 });

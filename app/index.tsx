@@ -6,6 +6,7 @@ import { collection, doc, getDocs, onSnapshot } from "firebase/firestore";
 import { useContext, useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DynamicBackground from "../components/DynamicBackground";
 import Header from "../components/Header";
 import SplashScreenComponent from "../components/SplashScreenComponent";
 import TopicButton from "../components/TopicButton";
@@ -100,27 +101,31 @@ export default function Index() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Top Header */}
-      <View style={styles.headerContainer}>
-        <Header />
-      </View>
+    <DynamicBackground>
+      <SafeAreaView style={styles.safeArea}>
+        {/* Top Header */}
+        <View style={styles.headerContainer}>
+          <Header />
+        </View>
 
-      {/* Main Content */}
-      <View style={styles.content}>
-        <TopicButton data={data} refreshing={refreshing} onRefresh={handleRefresh} />
-      </View>
+        {/* Main Content */}
+        <View style={styles.content}>
+          <TopicButton data={data} refreshing={refreshing} onRefresh={handleRefresh} />
+        </View>
 
-      {/* Bottom Banner Ad */}
-      {adConfig?.showBannerAds && <BannerAdComponent />}
-    </SafeAreaView>
+        {/* Bottom Banner Ad */}
+        {adConfig?.showBannerAds && <BannerAdComponent />}
+      </SafeAreaView>
+    </DynamicBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.BACKGROUND,
+  },
+  safeArea: {
+    flex: 1,
   },
   headerContainer: {
     paddingTop: 10,

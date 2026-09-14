@@ -2,7 +2,8 @@ import colors from "@/constants/colors";
 import Feather from "@expo/vector-icons/Feather";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { BlurView } from "expo-blur";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -10,7 +11,6 @@ import Animated, {
   withTiming,
   withSequence,
   withRepeat,
-  interpolate,
   runOnJS,
 } from "react-native-reanimated";
 
@@ -19,7 +19,6 @@ export default function Header() {
 
   const heartScale = useSharedValue(1);
   const settingsRotate = useSharedValue(0);
-  // 0 → 1 repeating forever, represents 0° → 360°
   const aiSpin = useSharedValue(0);
 
   const animateHeart = (callback) => {
@@ -52,13 +51,13 @@ export default function Header() {
       animateHeart();
       animateSettings();
     }, 500);
-    // Hold face → quick spin → hold other face → quick spin → repeat
+
     aiSpin.value = withRepeat(
       withSequence(
-        withTiming(0, { duration: 2000 }),       // hold zap for 2s
-        withTiming(0.5, { duration: 400 }),      // spin fast to AI
-        withTiming(0.5, { duration: 2000 }),     // hold AI for 2s
-        withTiming(1, { duration: 400 }),        // spin fast back to zap
+        withTiming(0, { duration: 2000 }),
+        withTiming(0.5, { duration: 400 }),
+        withTiming(0.5, { duration: 2000 }),
+        withTiming(1, { duration: 400 }),
       ),
       -1,
       false
@@ -82,58 +81,37 @@ export default function Header() {
     };
   });
 
-  // Full rotation mapped 0→0.5→1 = 0°→180°→360°
   const aiIconStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${aiSpin.value * 360}deg` }],
   }));
 
-  // Zap visible during 0–0.5 range, hidden during 0.5–1
   const aiZapStyle = useAnimatedStyle(() => ({
     opacity: aiSpin.value < 0.5 ? 1 : 0,
   }));
 
-  // AI text visible during 0.5–1 range, hidden during 0–0.5
-  // Counter-rotate so it always appears right-side-up
   const aiTextStyle = useAnimatedStyle(() => ({
     opacity: aiSpin.value >= 0.5 ? 1 : 0,
     transform: [{ rotate: `${-aiSpin.value * 360}deg` }],
   }));
 
   return (
-    <View
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        width: "90%",
-        paddingBottom: 10,
-      }}
-    >
-      <Text
-        style={{
-          fontFamily: "Baloo2",
-          fontSize: 24,
-          color: colors.TEXT,
-          fontWeight: "800",
-        }}
-      >
+    <BlurView intensity={50} tint="dark" style={styles.headerContainer}>
+      <Text style={styles.title}>
         Cheesy Lines
       </Text>
 
-      <View style={{ display: "flex", flexDirection: "row", gap: 10, alignItems: "center" }}>
-        {/* AI Magic Icon — spinning with zap ↔ AI flip */}
+      <View style={styles.iconContainer}>
+        {/* AI Magic Icon */}
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => router.push("/ai")}
         >
-          <Animated.View style={[aiIconStyle, { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' }]}>
-            {/* Zap icon: first half */}
-            <Animated.View style={[{ position: 'absolute' }, aiZapStyle]}>
-              <Feather name="zap" size={32} color="#0277BD" />
+          <Animated.View style={[aiIconStyle, styles.aiWrapper]}>
+            <Animated.View style={[styles.absoluteCenter, aiZapStyle]}>
+              <Feather name="zap" size={26} color={colors.ELECTRIC_CYAN} />
             </Animated.View>
-            {/* AI text: second half */}
-            <Animated.View style={[{ position: 'absolute' }, aiTextStyle]}>
-              <Text style={{ fontFamily: 'Poppins-Bold', fontSize: 14, color: '#0277BD', letterSpacing: 1 }}>AI</Text>
+            <Animated.View style={[styles.absoluteCenter, aiTextStyle]}>
+              <Text style={styles.aiText}>AI</Text>
             </Animated.View>
           </Animated.View>
         </TouchableOpacity>
@@ -146,7 +124,7 @@ export default function Header() {
           }}
         >
           <Animated.View style={heartStyle}>
-            <Feather name="heart" size={32} color="#EE5242" />
+            <Feather name="heart" size={26} color={colors.NEON_PINK} />
           </Animated.View>
         </TouchableOpacity>
 
@@ -158,10 +136,54 @@ export default function Header() {
           }}
         >
           <Animated.View style={settingsStyle}>
-            <Feather name="settings" size={32} color="black" />
+            <Feather name="settings" size={26} color="#FFF" />
           </Animated.View>
         </TouchableOpacity>
       </View>
-    </View>
+    </BlurView>
   );
 }
+
+const styles = StyleSheet.create({
+  headerContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "90%",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
+    overflow: "hidden",
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  title: {
+    fontFamily: "Outfit-Bold",
+    fontSize: 22,
+    color: "#FFF",
+  },
+  iconContainer: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 15,
+    alignItems: "center",
+  },
+  aiWrapper: {
+    width: 26,
+    height: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  absoluteCenter: {
+    position: 'absolute',
+  },
+  aiText: {
+    fontFamily: 'Outfit-Bold',
+    fontSize: 12,
+    color: colors.ELECTRIC_CYAN,
+    letterSpacing: 1,
+  },
+});

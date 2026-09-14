@@ -19,6 +19,8 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DynamicBackground from "../../components/DynamicBackground";
+import { BlurView } from "expo-blur";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -131,12 +133,13 @@ export default function AIGenerator() {
 
   return (
     <View style={{ flex: 1 }}>
-    <SafeAreaView style={styles.container}>
+    <DynamicBackground>
+      <SafeAreaView style={styles.safeArea}>
       {/* Header */}
       <View style={styles.headerContainer}>
         <Pressable onPressIn={handleBackPressIn} onPressOut={handleBackPressOut} hitSlop={10}>
           <Animated.View style={backBtnStyle}>
-            <Ionicons name="arrow-back-sharp" size={36} color="#333" />
+            <Ionicons name="arrow-back-sharp" size={36} color="#FFF" />
           </Animated.View>
         </Pressable>
         <Text style={styles.headerText}>AI Magic ✨</Text>
@@ -197,36 +200,38 @@ export default function AIGenerator() {
 
             {/* Result Card */}
             {generatedLine && (
-              <View style={styles.resultCard}>
-                <TouchableOpacity 
-                  style={{ position: 'absolute', top: 15, right: 15, padding: 5, zIndex: 10 }} 
-                  onPress={() => {
-                    Alert.alert("Report AI Content", "Thanks for letting us know! We'll review this AI generation.");
-                  }}
-                  hitSlop={15}
-                >
-                  <Feather name="flag" size={16} color="#B0BEC5" />
-                </TouchableOpacity>
-
-                <Text style={styles.resultText}>{generatedLine}</Text>
-                
-                <View style={{ flexDirection: "row", gap: 15 }}>
+              <View style={styles.gradientBorderContainer}>
+                <BlurView intensity={60} tint="dark" style={styles.resultCard}>
                   <TouchableOpacity 
-                    style={[styles.saveButton, isSaved && { backgroundColor: "#E8F5E9" }]} 
-                    onPress={handleSaveToFavorites}
-                    disabled={isSaved}
+                    style={{ position: 'absolute', top: 15, right: 15, padding: 5, zIndex: 10 }} 
+                    onPress={() => {
+                      Alert.alert("Report AI Content", "Thanks for letting us know! We'll review this AI generation.");
+                    }}
+                    hitSlop={15}
                   >
-                    <Feather name={isSaved ? "check" : "heart"} size={20} color={isSaved ? "#4CAF50" : "#EE5242"} />
-                    <Text style={[styles.saveButtonText, isSaved && { color: "#4CAF50" }]}>
-                      {isSaved ? "Saved!" : "Save"}
-                    </Text>
+                    <Feather name="flag" size={16} color="#B0BEC5" />
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.shareButton} onPress={handleShareAI}>
-                    <Feather name="share-2" size={20} color="#0277BD" />
-                    <Text style={styles.shareButtonText}>Share</Text>
-                  </TouchableOpacity>
-                </View>
+                  <Text style={styles.resultText}>{generatedLine}</Text>
+                  
+                  <View style={{ flexDirection: "row", gap: 15 }}>
+                    <TouchableOpacity 
+                      style={[styles.saveButton, isSaved && { backgroundColor: "#E8F5E9" }]} 
+                      onPress={handleSaveToFavorites}
+                      disabled={isSaved}
+                    >
+                      <Feather name={isSaved ? "check" : "heart"} size={20} color={isSaved ? "#4CAF50" : colors.BRAND_ORANGE} />
+                      <Text style={[styles.saveButtonText, isSaved && { color: "#4CAF50" }]}>
+                        {isSaved ? "Saved!" : "Save"}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.shareButton} onPress={handleShareAI}>
+                      <Feather name="share-2" size={20} color={colors.BRAND_ORANGE} />
+                      <Text style={styles.shareButtonText}>Share</Text>
+                    </TouchableOpacity>
+                  </View>
+                </BlurView>
               </View>
             )}
         </ScrollView>
@@ -265,6 +270,7 @@ export default function AIGenerator() {
         </View>
       )}
     </SafeAreaView>
+    </DynamicBackground>
     </View>
   );
 }
@@ -272,7 +278,9 @@ export default function AIGenerator() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.BACKGROUND,
+  },
+  safeArea: {
+    flex: 1,
     alignItems: "center",
   },
   headerContainer: {
@@ -282,14 +290,14 @@ const styles = StyleSheet.create({
     gap: 15,
     width: "90%",
     borderBottomWidth: 1,
-    borderColor: "#E5E5E5",
+    borderColor: "rgba(255,255,255,0.1)",
     alignItems: "center",
     zIndex: 10,
   },
   headerText: {
-    color: "#333",
+    color: "#FFF",
     fontSize: 26,
-    fontFamily: "Poppins-Bold",
+    fontFamily: "Outfit-Bold",
   },
   content: {
     flex: 1,
@@ -304,12 +312,12 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.BACKGROUND,
+    backgroundColor: "transparent",
   },
   description: {
-    fontFamily: "Poppins-Regular",
+    fontFamily: "Outfit-Regular",
     fontSize: 16,
-    color: "#555",
+    color: "rgba(255,255,255,0.7)",
     marginBottom: 25,
     textAlign: "center",
   },
@@ -386,29 +394,26 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: "#FFF",
-    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderRadius: 24,
     padding: 15,
     paddingTop: 15,
     minHeight: 60,
     maxHeight: 120,
-    fontFamily: "Poppins-Regular",
+    fontFamily: "Outfit-Regular",
     fontSize: 16,
-    color: "#333",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
+    color: "#FFF",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.2)",
   },
   generateButton: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#0277BD",
+    backgroundColor: colors.BRAND_ORANGE,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#0277BD",
+    shadowColor: colors.BRAND_ORANGE,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -421,51 +426,56 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-  resultCard: {
-    backgroundColor: "#FFF",
-    borderRadius: 20,
-    padding: 25,
-    shadowColor: "#000",
+  gradientBorderContainer: {
+    marginTop: 20,
+    shadowColor: colors.BRAND_ORANGE,
     shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.15,
-    shadowRadius: 15,
-    elevation: 8,
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  resultCard: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.2)",
+    padding: 25,
     alignItems: "center",
-    marginTop: 10,
+    overflow: "hidden",
   },
   resultText: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 22,
-    color: "#333",
+    fontFamily: "Playfair-BoldItalic",
+    fontSize: 26,
+    color: "#FFF",
     textAlign: "center",
+    lineHeight: 36,
     marginBottom: 30,
   },
   saveButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFF5F5",
+    backgroundColor: "rgba(255,255,255,0.15)",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 25,
     gap: 8,
   },
   saveButtonText: {
-    fontFamily: "Poppins-Bold",
-    color: "#EE5242",
+    fontFamily: "Outfit-Bold",
+    color: colors.BRAND_ORANGE,
     fontSize: 16,
   },
   shareButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#E1F5FE",
+    backgroundColor: "rgba(255,255,255,0.15)",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 25,
     gap: 8,
   },
   shareButtonText: {
-    fontFamily: "Poppins-Bold",
-    color: "#0277BD",
+    fontFamily: "Outfit-Bold",
+    color: colors.BRAND_ORANGE,
     fontSize: 16,
   },
   // In-page overlay (replaces Modal so it stays within phone frame on web)

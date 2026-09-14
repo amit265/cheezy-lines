@@ -30,6 +30,9 @@ const ShareCard = forwardRef(({ text }, ref) => {
         </View>
 
         {/* Branding / Footer is already in your image, but we can add more if needed */}
+        <View style={styles.watermarkContainer}>
+          <Text style={styles.watermarkText}>● cheesy-lines.app</Text>
+        </View>
       </ImageBackground>
     </View>
   );
@@ -62,12 +65,23 @@ const styles = StyleSheet.create({
     marginTop: -50, // Scaled down
   },
   quoteText: {
-    fontSize: 24, // Scaled down but still very clear
-    fontWeight: "bold",
-    color: "#4A3B32", // Dark Brown to match theme
+    fontSize: 28, // Scaled down but still very clear
+    color: "#0C1D59", // Dark Navy
     textAlign: "center",
-    fontFamily: "serif",
-    lineHeight: 34,
+    fontFamily: "Poppins-Bold",
+    lineHeight: 38,
+  },
+  watermarkContainer: {
+    position: "absolute",
+    bottom: 40,
+    width: "100%",
+    alignItems: "center",
+  },
+  watermarkText: {
+    fontSize: 16,
+    color: "rgba(12, 29, 89, 0.5)",
+    fontFamily: "Poppins-Bold",
+    letterSpacing: 1,
   },
 });
 

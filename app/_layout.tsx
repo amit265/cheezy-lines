@@ -2,6 +2,8 @@
 import { Stack, usePathname, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFonts } from "expo-font";
+import { Outfit_400Regular, Outfit_700Bold } from "@expo-google-fonts/outfit";
+import { PlayfairDisplay_400Regular, PlayfairDisplay_700Bold, PlayfairDisplay_700Bold_Italic } from "@expo-google-fonts/playfair-display";
 import * as Network from "expo-network";
 import { ErrorBoundary } from "react-error-boundary";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -313,6 +315,11 @@ function RootLayout() {
     "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
     "Poppins-Bold": require("../assets/fonts/Poppins-Bold.ttf"),
     Baloo2: require("../assets/fonts/Baloo2-SemiBold.ttf"),
+    "Outfit-Regular": Outfit_400Regular,
+    "Outfit-Bold": Outfit_700Bold,
+    "Playfair-Regular": PlayfairDisplay_400Regular,
+    "Playfair-Bold": PlayfairDisplay_700Bold,
+    "Playfair-BoldItalic": PlayfairDisplay_700Bold_Italic,
   });
 
   // ── State ──
@@ -467,7 +474,7 @@ function RootLayout() {
     >
       <StatusBar
         backgroundColor={colors.BACKGROUND}
-        barStyle="dark-content"
+        barStyle="light-content"
         hidden={false}
       />
       {Platform.OS === "web" ? (

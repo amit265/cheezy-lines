@@ -1,22 +1,37 @@
-export default {
-    BACKGROUND: "#FDF5E6",
-    TEXT: "#5D4037",
-    SETTING_BUTTON: "#4F2E2D",
-    WHITE: "#FFFFFF",
-    BLACK: "#000000",
-    QUOTES: "#D1AD75",
-    FRIENDS: "#EDAD53",
-    COUPLES: "#EE5242",
-    FAMILY: "#4F2E2D",
-    RANDOM: "#B14F0F",
-    FAVOURITES: "#98793C",
-    ERROR : "#E53935",
-    WARNING: "#FB8C00",
-    INFO: "#00ACC1",
-    SUCCESS: "#43A047",
-    PRIMARY: "#1E88E5",
-    SECONDARY: "#6C757D"
- 
- 
- 
- }
+const colors = {
+  // Deep Backgrounds
+  BACKGROUND: "#050B14", // Deepest space blue
+  DARK_INDIGO: "#081021",
+  
+  // Neon Accents
+  NEON_PINK: "#FF007F",
+  ELECTRIC_CYAN: "#00F0FF",
+  BRAND_ORANGE: "#FFA500", // Main brand color but glowing
+  NEON_GREEN: "#00FF66",
+  
+  // Glass Surfaces
+  CARD_BG: "rgba(255, 255, 255, 0.05)",
+  CARD_BORDER: "rgba(255, 255, 255, 0.15)",
+  
+  // Text
+  TEXT_LIGHT: "#FFFFFF",
+  TEXT_MUTED: "rgba(255, 255, 255, 0.6)",
+  TEXT_DARK: "#050B14",
+  
+  // Gradients
+  GRADIENT_PRIMARY: ["#FF007F", "#FFA500"], // Pink to Orange
+  GRADIENT_SECONDARY: ["#00F0FF", "#081021"], // Cyan to dark
+
+  // Standard legacy fallback if any component uses them
+  FAMILY: "#4F2E2D",
+  RANDOM: "#B14F0F",
+  FAVOURITES: "#FFA500",
+  ERROR : "#E53935",
+  WARNING: "#FB8C00",
+  INFO: "#00ACC1",
+  SUCCESS: "#43A047",
+  PRIMARY: "#FFA500", 
+  SECONDARY: "#6C757D"
+};
+
+export default colors;

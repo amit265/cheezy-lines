@@ -21,6 +21,7 @@ import * as StoreReview from "expo-store-review";
 import Feather from "@expo/vector-icons/Feather";
 import Swiper from "react-native-deck-swiper";
 import { captureRef } from "react-native-view-shot";
+import { BlurView } from "expo-blur";
 import colors from "../constants/colors";
 import { shareCaptions } from "../constants/constant";
 import { favoritesContext, adConfigContext } from "../context/AppContext";
@@ -42,11 +43,11 @@ const AdCard = ({ unitId }) => {
   return (
     <View style={[
       styles.card,
-      { backgroundColor: "#FDF5E6", justifyContent: "center", alignItems: "center" },
-      !adLoaded && { opacity: 0 }, // hide until loaded
+      { justifyContent: "center", alignItems: "center" },
+      !adLoaded && { opacity: 0 },
     ]}>
       {adLoaded && (
-        <Text style={{ fontFamily: "Poppins-Bold", color: "#aaa", fontSize: 11, marginBottom: 10 }}>
+        <Text style={{ fontFamily: "Outfit-Bold", color: "rgba(255,255,255,0.5)", fontSize: 11, marginBottom: 10 }}>
           Sponsored
         </Text>
       )}
@@ -255,12 +256,16 @@ export default function SwipeDeck({ card }) {
         <Text
           style={{
             position: "absolute",
-            right: 10,
-            top: 8,
-            fontFamily: "Baloo2",
+            right: 15,
+            top: 15,
+            fontFamily: "Outfit-Regular",
+            color: "rgba(255,255,255,0.8)",
+            zIndex: 10,
           }}
         >{`${actualCardIndex > 0 ? actualCardIndex : currentIndex + 1} / ${card?.length}`}</Text>
-        <Text style={styles.cardText}>{cardItem.text}</Text>
+        <View style={{ zIndex: 10, width: "100%", alignItems: "center" }}>
+          <Text style={styles.cardText}>{cardItem.text}</Text>
+        </View>
       </View>
     );
   };
@@ -383,7 +388,7 @@ export default function SwipeDeck({ card }) {
             swiperRef.current.swipeLeft();
           }}
         >
-          <Feather name="x" size={32} color="#E53935" />
+          <Feather name="x" size={32} color="#FFF" />
         </BouncyButton>
 
         <BouncyButton
@@ -393,7 +398,7 @@ export default function SwipeDeck({ card }) {
             swiperRef.current.swipeRight();
           }}
         >
-          <Feather name="heart" size={28} color="#43A047" />
+          <Feather name="heart" size={28} color="#FFF" />
         </BouncyButton>
 
         <BouncyButton
@@ -402,9 +407,9 @@ export default function SwipeDeck({ card }) {
           disabled={isSharing}
         >
           {isSharing ? (
-            <ActivityIndicator size="small" color="#0277BD" />
+            <ActivityIndicator size="small" color="#FFF" />
           ) : (
-            <Feather name="send" size={28} color="#0277BD" />
+            <Feather name="send" size={28} color="#FFF" />
           )}
         </BouncyButton>
       </View>
@@ -415,7 +420,7 @@ export default function SwipeDeck({ card }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.BACKGROUND,
+    backgroundColor: "transparent",
     justifyContent: "center",
   },
   centerContent: {
@@ -429,24 +434,26 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 0.65,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: "#E8E8E8",
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    backgroundColor: "#0A1128", // Solid dark color to prevent bleeding
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
-    padding: 20,
-    elevation: 5,
+    padding: 30,
+    overflow: "hidden", 
+    elevation: 10,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
   },
   cardText: {
-    fontSize: 24,
+    fontSize: 26,
     textAlign: "center",
-    color: "#333",
-    fontFamily: "Poppins-Bold",
+    color: "#FFFFFF",
+    fontFamily: "Playfair-Bold",
+    lineHeight: 36,
   },
   buttonsContainer: {
     flexDirection: "row",
@@ -467,28 +474,33 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   dislikeButton: {
-    backgroundColor: "#FFF",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderColor: "rgba(255,255,255,0.2)",
+    borderWidth: 1,
   },
   likeButton: {
-    backgroundColor: "#FFF",
+    backgroundColor: colors.BRAND_ORANGE,
   },
   buttonText: {
     fontSize: 30,
   },
   shareButton: {
-    backgroundColor: "#FFF",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderColor: "rgba(255,255,255,0.2)",
+    borderWidth: 1,
   },
   // Finished Screen Styles
   finishedTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#4A3B32",
+    fontSize: 28,
+    fontFamily: "Playfair-Bold",
+    color: "#FFF",
     marginBottom: 10,
     textAlign: "center",
   },
   finishedSubtitle: {
     fontSize: 16,
-    color: "#666",
+    color: "rgba(255,255,255,0.7)",
+    fontFamily: "Outfit-Regular",
     marginBottom: 40,
     textAlign: "center",
   },
@@ -503,16 +515,16 @@ const styles = StyleSheet.create({
     minWidth: 200, 
   },
   restartButton: {
-    backgroundColor: "#FFD54F",
+    backgroundColor: colors.BRAND_ORANGE,
   },
   goBackButton: {
-    backgroundColor: "#FFF",
+    backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: "#CCC",
+    borderColor: "rgba(255,255,255,0.2)",
   },
   actionButtonText: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
+    fontFamily: "Outfit-Bold",
+    color: "#FFF",
   },
 });
