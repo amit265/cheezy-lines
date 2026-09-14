@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import React, { useEffect, useMemo } from 'react';
+import { View, StyleSheet, Dimensions, useColorScheme } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,11 +9,14 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
-import colors from '../constants/colors';
+import { useThemeColors } from '../constants/colors';
 
 const { width, height } = Dimensions.get('window');
 
 export default function DynamicBackground({ children }) {
+  const colors = useThemeColors();
+  const colorScheme = useColorScheme();
+  
   const orb1X = useSharedValue(-width * 0.2);
   const orb1Y = useSharedValue(-height * 0.1);
   const orb2X = useSharedValue(width * 0.8);
@@ -86,6 +89,45 @@ export default function DynamicBackground({ children }) {
     transform: [{ translateX: orb3X.value }, { translateY: orb3Y.value }],
   }));
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.BACKGROUND,
+    },
+    backgroundLayer: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    orb: {
+      position: 'absolute',
+      borderRadius: 9999,
+    },
+    orb1: {
+      width: width * 0.8,
+      height: width * 0.8,
+      backgroundColor: colors.NEON_PINK,
+      opacity: 0.4,
+    },
+    orb2: {
+      width: width * 0.9,
+      height: width * 0.9,
+      backgroundColor: colors.ELECTRIC_CYAN,
+      opacity: 0.3,
+    },
+    orb3: {
+      width: width * 0.7,
+      height: width * 0.7,
+      backgroundColor: colors.BRAND_ORANGE,
+      opacity: 0.35,
+    },
+    blurLayer: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    contentLayer: {
+      flex: 1,
+      zIndex: 10,
+    },
+  }), [colors]);
+
   return (
     <View style={styles.container}>
       <View style={styles.backgroundLayer}>
@@ -93,47 +135,8 @@ export default function DynamicBackground({ children }) {
         <Animated.View style={[styles.orb, styles.orb2, orb2Style]} />
         <Animated.View style={[styles.orb, styles.orb3, orb3Style]} />
       </View>
-      <BlurView intensity={80} tint="dark" style={styles.blurLayer} />
+      <BlurView intensity={80} tint={colorScheme === 'dark' ? "dark" : "light"} style={styles.blurLayer} />
       <View style={styles.contentLayer}>{children}</View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#050B14', // Deepest space blue
-  },
-  backgroundLayer: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  orb: {
-    position: 'absolute',
-    borderRadius: 9999,
-  },
-  orb1: {
-    width: width * 0.8,
-    height: width * 0.8,
-    backgroundColor: '#FF007F', // Neon Pink
-    opacity: 0.4,
-  },
-  orb2: {
-    width: width * 0.9,
-    height: width * 0.9,
-    backgroundColor: '#00F0FF', // Electric Cyan
-    opacity: 0.3,
-  },
-  orb3: {
-    width: width * 0.7,
-    height: width * 0.7,
-    backgroundColor: '#FFA500', // Brand Orange
-    opacity: 0.35,
-  },
-  blurLayer: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  contentLayer: {
-    flex: 1,
-    zIndex: 10,
-  },
-});

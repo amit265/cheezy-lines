@@ -7,6 +7,7 @@ import { PlayfairDisplay_400Regular, PlayfairDisplay_700Bold, PlayfairDisplay_70
 import * as Network from "expo-network";
 import { ErrorBoundary } from "react-error-boundary";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useThemeColors } from "@/constants/colors";
 import {
   Alert,
   Linking,
@@ -16,14 +17,15 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
+  useColorScheme,
 } from "react-native";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Sentry from "@sentry/react-native";
 
 import ErrorFallBack from "./ErrorFallback";
 import MobileAds from "../components/MobileAdsProxy";
 import AdManager from "../services/AdManager";
-import colors from "@/constants/colors";
 import localStorage from "@/services/localStorage";
 import { sampleTopics } from "@/constants/topics";
 import { syncGlobalDataWithFirebase } from "../services/syncGlobalDataWithFirebase";
@@ -467,6 +469,9 @@ function RootLayout() {
     adConfigValue,
   };
 
+  const colors = useThemeColors();
+  const colorScheme = useColorScheme();
+
   return (
     <ErrorBoundary
       FallbackComponent={ErrorFallBack}
@@ -474,7 +479,7 @@ function RootLayout() {
     >
       <StatusBar
         backgroundColor={colors.BACKGROUND}
-        barStyle="light-content"
+        barStyle={colorScheme === 'dark' ? "light-content" : "dark-content"}
         hidden={false}
       />
       {Platform.OS === "web" ? (

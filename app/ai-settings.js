@@ -1,6 +1,6 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -25,12 +25,143 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 
-import colors from "../constants/colors";
+import { useThemeColors } from "../constants/colors";
 import { BannerAdComponent } from "../services/AdManager";
 
 export default function AISettings() {
   const router = useRouter();
   const [apiKey, setApiKey] = useState("");
+  const colors = useThemeColors();
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.BACKGROUND,
+      alignItems: "center",
+    },
+    headerContainer: {
+      paddingVertical: 10,
+      display: "flex",
+      flexDirection: "row",
+      gap: 15,
+      width: "90%",
+      borderBottomWidth: 1,
+      borderColor: colors.CARD_BORDER,
+      alignItems: "center",
+      zIndex: 10,
+    },
+    headerText: {
+      color: colors.TEXT,
+      fontSize: 26,
+      fontFamily: "Poppins-Bold",
+    },
+    content: {
+      paddingTop: 30,
+      paddingHorizontal: 20,
+      paddingBottom: 50,
+    },
+    infoCard: {
+      backgroundColor: colors.CARD_BG,
+      borderRadius: 20,
+      padding: 25,
+      alignItems: "center",
+      marginBottom: 30,
+      borderWidth: 1,
+      borderColor: colors.PRIMARY + "30",
+    },
+    cardTitle: {
+      fontFamily: "Poppins-Bold",
+      fontSize: 22,
+      color: colors.TEXT,
+      marginBottom: 10,
+    },
+    cardDescription: {
+      fontFamily: "Poppins-Regular",
+      fontSize: 14,
+      color: colors.MUTED,
+      textAlign: "center",
+      lineHeight: 22,
+    },
+    stepsContainer: {
+      marginBottom: 25,
+    },
+    stepsHeader: {
+      fontFamily: "Poppins-Bold",
+      fontSize: 18,
+      color: colors.TEXT,
+      marginBottom: 15,
+    },
+    stepItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 15,
+      paddingRight: 20,
+    },
+    stepCircle: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      backgroundColor: colors.PRIMARY,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 15,
+    },
+    stepNumber: {
+      color: "#FFF",
+      fontFamily: "Poppins-Bold",
+      fontSize: 14,
+    },
+    stepText: {
+      fontFamily: "Poppins-Regular",
+      fontSize: 14,
+      color: colors.TEXT,
+      flex: 1,
+    },
+    groqButton: {
+      backgroundColor: colors.TEXT,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 15,
+      borderRadius: 12,
+      gap: 10,
+      marginBottom: 40,
+    },
+    groqButtonText: {
+      color: colors.BACKGROUND,
+      fontFamily: "Poppins-Bold",
+      fontSize: 16,
+    },
+    inputContainer: {
+      backgroundColor: colors.CARD_BG,
+      padding: 20,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: colors.CARD_BORDER,
+    },
+    inputLabel: {
+      fontFamily: "Poppins-Bold",
+      fontSize: 16,
+      color: colors.TEXT,
+      marginBottom: 10,
+    },
+    input: {
+      backgroundColor: colors.BACKGROUND,
+      borderWidth: 1,
+      borderColor: colors.CARD_BORDER,
+      borderRadius: 10,
+      padding: 15,
+      fontFamily: "Poppins-Regular",
+      fontSize: 14,
+      color: colors.TEXT,
+      marginBottom: 10,
+    },
+    secureNote: {
+      fontFamily: "Poppins-Regular",
+      fontSize: 12,
+      color: colors.MUTED,
+    },
+  }), [colors]);
 
   const backBtnScale = useSharedValue(1);
 
@@ -76,7 +207,7 @@ export default function AISettings() {
       <View style={styles.headerContainer}>
         <Pressable onPressIn={handleBackPressIn} onPressOut={handleBackPressOut} hitSlop={10}>
           <Animated.View style={backBtnStyle}>
-            <Ionicons name="arrow-back-sharp" size={36} color="#333" />
+            <Ionicons name="arrow-back-sharp" size={36} color={colors.TEXT} />
           </Animated.View>
         </Pressable>
         <Text style={styles.headerText}>AI Setup</Text>
@@ -90,7 +221,7 @@ export default function AISettings() {
           <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
             
             <View style={styles.infoCard}>
-              <Feather name="zap" size={40} color="#FFB74D" style={{ marginBottom: 15 }} />
+              <Feather name="zap" size={40} color={colors.PRIMARY} style={{ marginBottom: 15 }} />
               <Text style={styles.cardTitle}>Unlock AI Magic</Text>
               <Text style={styles.cardDescription}>
                 {"Cheesy Lines uses the ultra-fast Llama 3 model via Groq. To generate unlimited custom lines for free, you just need to grab your own API key. It's completely free and takes 1 minute!"}
@@ -121,7 +252,7 @@ export default function AISettings() {
               onPress={() => Linking.openURL("https://console.groq.com/keys")}
             >
               <Text style={styles.groqButtonText}>Open Groq Console</Text>
-              <Feather name="external-link" size={18} color="#FFF" />
+              <Feather name="external-link" size={18} color={colors.BACKGROUND} />
             </TouchableOpacity>
 
             <View style={styles.inputContainer}>
@@ -129,7 +260,7 @@ export default function AISettings() {
               <TextInput
                 style={styles.input}
                 placeholder="gsk_..."
-                placeholderTextColor="#999"
+                placeholderTextColor={colors.MUTED}
                 value={apiKey}
                 onChangeText={saveKey}
                 secureTextEntry
@@ -137,7 +268,7 @@ export default function AISettings() {
                 autoCorrect={false}
               />
               <Text style={styles.secureNote}>
-                <Feather name="lock" size={12} color="#888" /> Stored securely and exclusively on your device.
+                <Feather name="lock" size={12} color={colors.MUTED} /> Stored securely and exclusively on your device.
               </Text>
             </View>
 
@@ -150,139 +281,3 @@ export default function AISettings() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.BACKGROUND,
-    alignItems: "center",
-  },
-  headerContainer: {
-    paddingVertical: 10,
-    display: "flex",
-    flexDirection: "row",
-    gap: 15,
-    width: "90%",
-    borderBottomWidth: 1,
-    borderColor: "#E5E5E5",
-    alignItems: "center",
-    zIndex: 10,
-  },
-  headerText: {
-    color: "#333",
-    fontSize: 26,
-    fontFamily: "Poppins-Bold",
-  },
-  content: {
-    paddingTop: 30,
-    paddingHorizontal: 20,
-    paddingBottom: 50,
-  },
-  infoCard: {
-    backgroundColor: "#FFF3E0",
-    borderRadius: 20,
-    padding: 25,
-    alignItems: "center",
-    marginBottom: 30,
-    shadowColor: "#FFB74D",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  cardTitle: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 22,
-    color: "#333",
-    marginBottom: 10,
-  },
-  cardDescription: {
-    fontFamily: "Poppins-Regular",
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-    lineHeight: 22,
-  },
-  stepsContainer: {
-    marginBottom: 25,
-  },
-  stepsHeader: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 18,
-    color: "#333",
-    marginBottom: 15,
-  },
-  stepItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15,
-    paddingRight: 20,
-  },
-  stepCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "#333",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 15,
-  },
-  stepNumber: {
-    color: "#FFF",
-    fontFamily: "Poppins-Bold",
-    fontSize: 14,
-  },
-  stepText: {
-    fontFamily: "Poppins-Regular",
-    fontSize: 14,
-    color: "#555",
-    flex: 1,
-  },
-  groqButton: {
-    backgroundColor: "#333",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 15,
-    borderRadius: 12,
-    gap: 10,
-    marginBottom: 40,
-  },
-  groqButtonText: {
-    color: "#FFF",
-    fontFamily: "Poppins-Bold",
-    fontSize: 16,
-  },
-  inputContainer: {
-    backgroundColor: "#FFF",
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  inputLabel: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 16,
-    color: "#333",
-    marginBottom: 10,
-  },
-  input: {
-    backgroundColor: "#F9F9F9",
-    borderWidth: 1,
-    borderColor: "#E5E5E5",
-    borderRadius: 10,
-    padding: 15,
-    fontFamily: "Poppins-Regular",
-    fontSize: 14,
-    color: "#333",
-    marginBottom: 10,
-  },
-  secureNote: {
-    fontFamily: "Poppins-Regular",
-    fontSize: 12,
-    color: "#888",
-  },
-});

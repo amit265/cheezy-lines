@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
 import { useRouter } from "expo-router";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useMemo } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -30,7 +30,7 @@ import Animated, {
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import colors from "../../constants/colors";
+import { useThemeColors } from "../../constants/colors";
 import { favoritesContext } from "../../context/AppContext";
 import { generateCheesyLine } from "../../services/groq";
 import { getRandomOfflineLine } from "../../services/offlineAILines";
@@ -40,6 +40,7 @@ import { AI_PROMPT_SUGGESTIONS } from "../../constants/aiPrompts";
 export default function AIGenerator() {
   const router = useRouter();
   const { setFavorites } = useContext(favoritesContext);
+  const colors = useThemeColors();
 
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
@@ -131,15 +132,239 @@ export default function AIGenerator() {
     } catch (error) {}
   };
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    safeArea: {
+      flex: 1,
+      alignItems: "center",
+      backgroundColor: colors.BACKGROUND,
+    },
+    headerContainer: {
+      paddingVertical: 10,
+      display: "flex",
+      flexDirection: "row",
+      gap: 15,
+      width: "90%",
+      borderBottomWidth: 1,
+      borderColor: colors.CARD_BORDER,
+      alignItems: "center",
+      zIndex: 10,
+    },
+    headerText: {
+      color: colors.TEXT,
+      fontSize: 26,
+      fontFamily: "Outfit-Bold",
+    },
+    content: {
+      flex: 1,
+      width: "90%",
+      alignSelf: "center",
+      paddingTop: 30,
+    },
+    bannerContainer: {
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "transparent",
+    },
+    description: {
+      fontFamily: "Outfit-Regular",
+      fontSize: 16,
+      color: colors.MUTED,
+      marginBottom: 25,
+      textAlign: "center",
+    },
+    inputContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 10,
+    },
+
+    suggestionChip: {
+      backgroundColor: colors.CARD_BG,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: colors.CARD_BORDER,
+      width: "100%",
+    },
+    suggestionText: {
+      fontFamily: "Poppins-Regular",
+      fontSize: 14,
+      color: colors.TEXT,
+      textAlign: "center",
+    },
+    warningText: {
+      fontFamily: "Poppins-Regular",
+      fontSize: 10,
+      color: colors.MUTED,
+      textAlign: "center",
+      marginBottom: 20,
+    },
+    suggestionsContainer: {
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 12,
+      paddingVertical: 10,
+    },
+    suggestionTriggerButton: {
+      alignSelf: "center",
+      backgroundColor: colors.CARD_BG,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 20,
+      marginBottom: 20,
+    },
+    suggestionTriggerText: {
+      fontFamily: "Poppins-Regular",
+      fontSize: 14,
+      color: colors.TEXT,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      justifyContent: "flex-end",
+    },
+    modalContent: {
+      backgroundColor: colors.BACKGROUND,
+      borderTopLeftRadius: 25,
+      borderTopRightRadius: 25,
+      padding: 25,
+      maxHeight: "80%",
+    },
+    modalHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 20,
+    },
+    modalTitle: {
+      fontFamily: "Poppins-Bold",
+      fontSize: 18,
+      color: colors.TEXT,
+    },
+    input: {
+      flex: 1,
+      backgroundColor: colors.CARD_BG,
+      borderRadius: 24,
+      padding: 15,
+      paddingTop: 15,
+      minHeight: 60,
+      maxHeight: 120,
+      fontFamily: "Outfit-Regular",
+      fontSize: 16,
+      color: colors.TEXT,
+      borderWidth: 1,
+      borderColor: colors.CARD_BORDER,
+    },
+    generateButton: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      backgroundColor: colors.BRAND_ORANGE,
+      justifyContent: "center",
+      alignItems: "center",
+      shadowColor: colors.BRAND_ORANGE,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 5,
+    },
+    errorText: {
+      fontFamily: "Poppins-Regular",
+      color: colors.ERROR || "#E53935",
+      fontSize: 14,
+      textAlign: "center",
+      marginBottom: 20,
+    },
+    gradientBorderContainer: {
+      marginTop: 20,
+      shadowColor: colors.BRAND_ORANGE,
+      shadowOffset: { width: 0, height: 5 },
+      shadowOpacity: 0.6,
+      shadowRadius: 20,
+      elevation: 10,
+    },
+    resultCard: {
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor: colors.CARD_BORDER,
+      padding: 25,
+      alignItems: "center",
+      overflow: "hidden",
+      backgroundColor: colors.CARD_BG,
+    },
+    resultText: {
+      fontFamily: "Playfair-BoldItalic",
+      fontSize: 26,
+      color: colors.TEXT,
+      textAlign: "center",
+      lineHeight: 36,
+      marginBottom: 30,
+    },
+    saveButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.CARD_BG,
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 25,
+      gap: 8,
+    },
+    saveButtonText: {
+      fontFamily: "Outfit-Bold",
+      color: colors.BRAND_ORANGE,
+      fontSize: 16,
+    },
+    shareButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.CARD_BG,
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 25,
+      gap: 8,
+    },
+    shareButtonText: {
+      fontFamily: "Outfit-Bold",
+      color: colors.BRAND_ORANGE,
+      fontSize: 16,
+    },
+    // In-page overlay (replaces Modal so it stays within phone frame on web)
+    overlayBackdrop: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      justifyContent: "flex-end",
+      zIndex: 100,
+    },
+    overlaySheet: {
+      backgroundColor: colors.BACKGROUND,
+      borderTopLeftRadius: 25,
+      borderTopRightRadius: 25,
+      padding: 25,
+      maxHeight: "75%",
+    },
+  }), [colors]);
+
   return (
     <View style={{ flex: 1 }}>
-    <DynamicBackground>
       <SafeAreaView style={styles.safeArea}>
       {/* Header */}
       <View style={styles.headerContainer}>
         <Pressable onPressIn={handleBackPressIn} onPressOut={handleBackPressOut} hitSlop={10}>
           <Animated.View style={backBtnStyle}>
-            <Ionicons name="arrow-back-sharp" size={36} color="#FFF" />
+            <Ionicons name="arrow-back-sharp" size={36} color={colors.TEXT} />
           </Animated.View>
         </Pressable>
         <Text style={styles.headerText}>AI Magic ✨</Text>
@@ -164,7 +389,7 @@ export default function AIGenerator() {
               <TextInput
                 style={styles.input}
                 placeholder="e.g. A pickup line about coffee..."
-                placeholderTextColor="#999"
+                placeholderTextColor={colors.MUTED}
                 value={prompt}
                 onChangeText={setPrompt}
                 multiline
@@ -176,15 +401,15 @@ export default function AIGenerator() {
                 disabled={!prompt.trim() || loading}
               >
                 {loading ? (
-                  <ActivityIndicator color="#FFF" />
+                  <ActivityIndicator color={colors.BACKGROUND} />
                 ) : (
-                  <Feather name="zap" size={24} color="#FFF" />
+                  <Feather name="zap" size={24} color={colors.BACKGROUND} />
                 )}
               </TouchableOpacity>
             </View>
 
             <Text style={styles.warningText}>
-              <Feather name="alert-triangle" size={10} color="#999" /> AI can make mistakes. Be careful !
+              <Feather name="alert-triangle" size={10} color={colors.MUTED} /> AI can make mistakes. Be careful !
             </Text>
 
             {/* Suggestion Button */}
@@ -201,7 +426,7 @@ export default function AIGenerator() {
             {/* Result Card */}
             {generatedLine && (
               <View style={styles.gradientBorderContainer}>
-                <BlurView intensity={60} tint="dark" style={styles.resultCard}>
+                <View style={styles.resultCard}>
                   <TouchableOpacity 
                     style={{ position: 'absolute', top: 15, right: 15, padding: 5, zIndex: 10 }} 
                     onPress={() => {
@@ -209,19 +434,19 @@ export default function AIGenerator() {
                     }}
                     hitSlop={15}
                   >
-                    <Feather name="flag" size={16} color="#B0BEC5" />
+                    <Feather name="flag" size={16} color={colors.MUTED} />
                   </TouchableOpacity>
 
                   <Text style={styles.resultText}>{generatedLine}</Text>
                   
                   <View style={{ flexDirection: "row", gap: 15 }}>
                     <TouchableOpacity 
-                      style={[styles.saveButton, isSaved && { backgroundColor: "#E8F5E9" }]} 
+                      style={[styles.saveButton, isSaved && { backgroundColor: colors.SUCCESS + "20" }]} 
                       onPress={handleSaveToFavorites}
                       disabled={isSaved}
                     >
-                      <Feather name={isSaved ? "check" : "heart"} size={20} color={isSaved ? "#4CAF50" : colors.BRAND_ORANGE} />
-                      <Text style={[styles.saveButtonText, isSaved && { color: "#4CAF50" }]}>
+                      <Feather name={isSaved ? "check" : "heart"} size={20} color={isSaved ? colors.SUCCESS : colors.BRAND_ORANGE} />
+                      <Text style={[styles.saveButtonText, isSaved && { color: colors.SUCCESS }]}>
                         {isSaved ? "Saved!" : "Save"}
                       </Text>
                     </TouchableOpacity>
@@ -231,7 +456,7 @@ export default function AIGenerator() {
                       <Text style={styles.shareButtonText}>Share</Text>
                     </TouchableOpacity>
                   </View>
-                </BlurView>
+                </View>
               </View>
             )}
         </ScrollView>
@@ -248,7 +473,7 @@ export default function AIGenerator() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Need Inspiration? 💡</Text>
               <TouchableOpacity onPress={() => setShowSuggestions(false)}>
-                <Feather name="x" size={24} color="#333" />
+                <Feather name="x" size={24} color={colors.TEXT} />
               </TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={styles.suggestionsContainer} showsVerticalScrollIndicator={false}>
@@ -269,231 +494,7 @@ export default function AIGenerator() {
           </View>
         </View>
       )}
-    </SafeAreaView>
-    </DynamicBackground>
+      </SafeAreaView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-    alignItems: "center",
-  },
-  headerContainer: {
-    paddingVertical: 10,
-    display: "flex",
-    flexDirection: "row",
-    gap: 15,
-    width: "90%",
-    borderBottomWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-    alignItems: "center",
-    zIndex: 10,
-  },
-  headerText: {
-    color: "#FFF",
-    fontSize: 26,
-    fontFamily: "Outfit-Bold",
-  },
-  content: {
-    flex: 1,
-    width: "90%",
-    alignSelf: "center",
-    paddingTop: 30,
-  },
-  bannerContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "transparent",
-  },
-  description: {
-    fontFamily: "Outfit-Regular",
-    fontSize: 16,
-    color: "rgba(255,255,255,0.7)",
-    marginBottom: 25,
-    textAlign: "center",
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 10,
-  },
-
-  suggestionChip: {
-    backgroundColor: "#E1F5FE",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#B3E5FC",
-    width: "100%",
-  },
-  suggestionText: {
-    fontFamily: "Poppins-Regular",
-    fontSize: 14,
-    color: "#0277BD",
-    textAlign: "center",
-  },
-  warningText: {
-    fontFamily: "Poppins-Regular",
-    fontSize: 10,
-    color: "#999",
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  suggestionsContainer: {
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 10,
-  },
-  suggestionTriggerButton: {
-    alignSelf: "center",
-    backgroundColor: "#F0F0F0",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    marginBottom: 20,
-  },
-  suggestionTriggerText: {
-    fontFamily: "Poppins-Regular",
-    fontSize: 14,
-    color: "#555",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#FFF",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    padding: 25,
-    maxHeight: "80%",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 18,
-    color: "#333",
-  },
-  input: {
-    flex: 1,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderRadius: 24,
-    padding: 15,
-    paddingTop: 15,
-    minHeight: 60,
-    maxHeight: 120,
-    fontFamily: "Outfit-Regular",
-    fontSize: 16,
-    color: "#FFF",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
-  },
-  generateButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.BRAND_ORANGE,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: colors.BRAND_ORANGE,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  errorText: {
-    fontFamily: "Poppins-Regular",
-    color: "#E53935",
-    fontSize: 14,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  gradientBorderContainer: {
-    marginTop: 20,
-    shadowColor: colors.BRAND_ORANGE,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.6,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  resultCard: {
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
-    padding: 25,
-    alignItems: "center",
-    overflow: "hidden",
-  },
-  resultText: {
-    fontFamily: "Playfair-BoldItalic",
-    fontSize: 26,
-    color: "#FFF",
-    textAlign: "center",
-    lineHeight: 36,
-    marginBottom: 30,
-  },
-  saveButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.15)",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    gap: 8,
-  },
-  saveButtonText: {
-    fontFamily: "Outfit-Bold",
-    color: colors.BRAND_ORANGE,
-    fontSize: 16,
-  },
-  shareButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.15)",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    gap: 8,
-  },
-  shareButtonText: {
-    fontFamily: "Outfit-Bold",
-    color: colors.BRAND_ORANGE,
-    fontSize: 16,
-  },
-  // In-page overlay (replaces Modal so it stays within phone frame on web)
-  overlayBackdrop: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-    zIndex: 100,
-  },
-  overlaySheet: {
-    backgroundColor: "#FFF",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    padding: 25,
-    maxHeight: "75%",
-  },
-});

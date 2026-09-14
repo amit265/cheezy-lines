@@ -22,7 +22,7 @@ import Feather from "@expo/vector-icons/Feather";
 import Swiper from "react-native-deck-swiper";
 import { captureRef } from "react-native-view-shot";
 import { BlurView } from "expo-blur";
-import colors from "../constants/colors";
+import { useThemeColors } from "../constants/colors";
 import { shareCaptions } from "../constants/constant";
 import { favoritesContext, adConfigContext } from "../context/AppContext";
 import { shuffleArray } from "../utils/shuffleQuestion";
@@ -31,7 +31,7 @@ import { getAdUnitId } from "../services/AdManager";
 import { BannerAd, BannerAdSize } from "./NativeBannerAd";
 
 // --- SUB-COMPONENT: Ad Card (only renders when ad is loaded) ---
-const AdCard = ({ unitId }) => {
+const AdCard = ({ unitId, isTopCard, colors }) => {
   const [adLoaded, setAdLoaded] = useState(false);
   const [adFailed, setAdFailed] = useState(false);
 
@@ -42,24 +42,45 @@ const AdCard = ({ unitId }) => {
 
   return (
     <View style={[
-      styles.card,
+      stylesAdCard(colors).card,
       { justifyContent: "center", alignItems: "center" },
       !adLoaded && { opacity: 0 },
     ]}>
-      {adLoaded && (
+      {adLoaded && isTopCard && (
         <Text style={{ fontFamily: "Outfit-Bold", color: "rgba(255,255,255,0.5)", fontSize: 11, marginBottom: 10 }}>
           Sponsored
         </Text>
       )}
-      <BannerAd
-        unitId={unitId}
-        size={BannerAdSize.MEDIUM_RECTANGLE}
-        onAdLoaded={() => setAdLoaded(true)}
-        onAdFailedToLoad={() => setAdFailed(true)}
-      />
+      <View style={{ opacity: isTopCard ? 1 : 0 }}>
+        <BannerAd
+          unitId={unitId}
+          size={BannerAdSize.MEDIUM_RECTANGLE}
+          onAdLoaded={() => setAdLoaded(true)}
+          onAdFailedToLoad={() => setAdFailed(true)}
+        />
+      </View>
     </View>
   );
 };
+
+const stylesAdCard = (colors) => StyleSheet.create({
+  card: {
+    flex: 0.65,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: colors.CARD_BORDER,
+    backgroundColor: colors.CARD_BG,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 30,
+    overflow: "hidden", 
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+  }
+});
 
 // --- SUB-COMPONENT: Reusable Bouncy Button ---
 const BouncyButton = ({ onPress, style, children, disabled }) => {
@@ -112,6 +133,7 @@ export default function SwipeDeck({ card }) {
   const [deckKey, setDeckKey] = useState(0);
   const playstoreLink = "https://bit.ly/question-games";
   const shareMessage = shuffleArray(shareCaptions);
+  const colors = useThemeColors();
 
   // --- COMPUTE CARDS WITH ADS ---
   const cardsWithAds = useMemo(() => {
@@ -237,14 +259,18 @@ export default function SwipeDeck({ card }) {
     } catch (error) {}
   };
 
-  const renderCard = (cardItem) => {
+  const renderCard = (cardItem, index) => {
     if (!cardItem) return <View style={styles.card} />;
     
+    const isTopCard = index === currentIndex;
+
     if (cardItem.isAd) {
       // Only render the ad card once the ad is confirmed loaded
       return (
         <AdCard
           unitId={getAdUnitId("banner", adConfig?.testAds)}
+          isTopCard={isTopCard}
+          colors={colors}
         />
       );
     }
@@ -253,17 +279,18 @@ export default function SwipeDeck({ card }) {
 
     return (
       <View style={styles.card}>
-        <Text
-          style={{
-            position: "absolute",
-            right: 15,
-            top: 15,
-            fontFamily: "Outfit-Regular",
-            color: "rgba(255,255,255,0.8)",
-            zIndex: 10,
-          }}
-        >{`${actualCardIndex > 0 ? actualCardIndex : currentIndex + 1} / ${card?.length}`}</Text>
-        <View style={{ zIndex: 10, width: "100%", alignItems: "center" }}>
+        {/* Hide text when card is in the stack behind the top card */}
+        <View style={{ opacity: isTopCard ? 1 : 0, width: "100%", height: "100%", justifyContent: "center", alignItems: "center" }}>
+          <Text
+            style={{
+              position: "absolute",
+              right: -10,
+              top: -10,
+              fontFamily: "Outfit-Regular",
+              color: colors.TEXT_MUTED,
+              zIndex: 10,
+            }}
+          >{`${actualCardIndex > 0 ? actualCardIndex : currentIndex + 1} / ${card?.length}`}</Text>
           <Text style={styles.cardText}>{cardItem.text}</Text>
         </View>
       </View>
@@ -282,6 +309,118 @@ export default function SwipeDeck({ card }) {
   const handleGoBack = () => {
     navigation.goBack();
   };
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "transparent",
+      justifyContent: "center",
+    },
+    centerContent: {
+      alignItems: "center",
+      padding: 20,
+    },
+    swiperContainer: {
+      flex: 1,
+      marginTop: 50,
+      marginBottom: 50,
+    },
+    card: {
+      flex: 0.65,
+      borderRadius: 30,
+      borderWidth: 1,
+      borderColor: colors.CARD_BORDER,
+      backgroundColor: colors.CARD_BG,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 30,
+      overflow: "hidden", 
+      elevation: 10,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.5,
+      shadowRadius: 15,
+    },
+    cardText: {
+      fontSize: 22,
+      textAlign: "center",
+      color: colors.TEXT,
+      fontFamily: "Playfair-Bold",
+      lineHeight: 32,
+    },
+    buttonsContainer: {
+      flexDirection: "row",
+      justifyContent: "space-evenly",
+      alignItems: "center",
+      marginBottom: 40,
+    },
+    button: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      justifyContent: "center",
+      alignItems: "center",
+      elevation: 4,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+    },
+    dislikeButton: {
+      backgroundColor: colors.CARD_BG,
+      borderColor: colors.CARD_BORDER,
+      borderWidth: 1,
+    },
+    likeButton: {
+      backgroundColor: colors.BRAND_ORANGE,
+    },
+    buttonText: {
+      fontSize: 30,
+    },
+    shareButton: {
+      backgroundColor: colors.CARD_BG,
+      borderColor: colors.CARD_BORDER,
+      borderWidth: 1,
+    },
+    // Finished Screen Styles
+    finishedTitle: {
+      fontSize: 28,
+      fontFamily: "Playfair-Bold",
+      color: colors.TEXT,
+      marginBottom: 10,
+      textAlign: "center",
+    },
+    finishedSubtitle: {
+      fontSize: 16,
+      color: colors.TEXT_MUTED,
+      fontFamily: "Outfit-Regular",
+      marginBottom: 40,
+      textAlign: "center",
+    },
+    actionButton: {
+      width: "100%", // Adjusted to work well inside BouncyButton
+      padding: 15,
+      borderRadius: 12,
+      alignItems: "center",
+      marginBottom: 15,
+      elevation: 2,
+      // Note: widths should usually be defined on the child of BouncyButton or container
+      minWidth: 200, 
+    },
+    restartButton: {
+      backgroundColor: colors.BRAND_ORANGE,
+    },
+    goBackButton: {
+      backgroundColor: "transparent",
+      borderWidth: 1,
+      borderColor: colors.CARD_BORDER,
+    },
+    actionButtonText: {
+      fontSize: 16,
+      fontFamily: "Outfit-Bold",
+      color: "#FFF",
+    },
+  }), [colors]);
 
   // --- 1. VIEW: FINISHED SCREEN (Animated) ---
   if (isEndOfDeck) {
@@ -361,17 +500,23 @@ export default function SwipeDeck({ card }) {
               title: "NOPE",
               style: {
                 label: {
-                  borderColor: "red",
-                  color: "red",
-                  borderWidth: 1,
+                  borderColor: colors.NEON_PINK,
+                  color: colors.NEON_PINK,
+                  borderWidth: 2,
                   textAlign: "right",
+                  fontFamily: "Outfit-Bold",
                 },
               },
             },
             right: {
               title: "LIKE",
               style: {
-                label: { borderColor: "green", color: "green", borderWidth: 1 },
+                label: { 
+                  borderColor: colors.ELECTRIC_CYAN, 
+                  color: colors.ELECTRIC_CYAN, 
+                  borderWidth: 2,
+                  fontFamily: "Outfit-Bold",
+                },
               },
             },
           }}
@@ -388,7 +533,7 @@ export default function SwipeDeck({ card }) {
             swiperRef.current.swipeLeft();
           }}
         >
-          <Feather name="x" size={32} color="#FFF" />
+          <Feather name="x" size={32} color={colors.TEXT} />
         </BouncyButton>
 
         <BouncyButton
@@ -407,124 +552,12 @@ export default function SwipeDeck({ card }) {
           disabled={isSharing}
         >
           {isSharing ? (
-            <ActivityIndicator size="small" color="#FFF" />
+            <ActivityIndicator size="small" color={colors.TEXT} />
           ) : (
-            <Feather name="send" size={28} color="#FFF" />
+            <Feather name="send" size={28} color={colors.TEXT} />
           )}
         </BouncyButton>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "transparent",
-    justifyContent: "center",
-  },
-  centerContent: {
-    alignItems: "center",
-    padding: 20,
-  },
-  swiperContainer: {
-    flex: 1,
-    marginTop: 50,
-    marginBottom: 50,
-  },
-  card: {
-    flex: 0.65,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-    backgroundColor: "#0A1128", // Solid dark color to prevent bleeding
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 30,
-    overflow: "hidden", 
-    elevation: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 15,
-  },
-  cardText: {
-    fontSize: 26,
-    textAlign: "center",
-    color: "#FFFFFF",
-    fontFamily: "Playfair-Bold",
-    lineHeight: 36,
-  },
-  buttonsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  button: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-  dislikeButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    borderColor: "rgba(255,255,255,0.2)",
-    borderWidth: 1,
-  },
-  likeButton: {
-    backgroundColor: colors.BRAND_ORANGE,
-  },
-  buttonText: {
-    fontSize: 30,
-  },
-  shareButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    borderColor: "rgba(255,255,255,0.2)",
-    borderWidth: 1,
-  },
-  // Finished Screen Styles
-  finishedTitle: {
-    fontSize: 28,
-    fontFamily: "Playfair-Bold",
-    color: "#FFF",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  finishedSubtitle: {
-    fontSize: 16,
-    color: "rgba(255,255,255,0.7)",
-    fontFamily: "Outfit-Regular",
-    marginBottom: 40,
-    textAlign: "center",
-  },
-  actionButton: {
-    width: "100%", // Adjusted to work well inside BouncyButton
-    padding: 15,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 15,
-    elevation: 2,
-    // Note: widths should usually be defined on the child of BouncyButton or container
-    minWidth: 200, 
-  },
-  restartButton: {
-    backgroundColor: colors.BRAND_ORANGE,
-  },
-  goBackButton: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
-  },
-  actionButtonText: {
-    fontSize: 16,
-    fontFamily: "Outfit-Bold",
-    color: "#FFF",
-  },
-});

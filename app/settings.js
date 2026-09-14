@@ -5,7 +5,7 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useContext } from "react";
+import React, { useContext, useMemo } from "react";
 import {
   Alert,
   Linking,
@@ -20,7 +20,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import CrossPromoHub from "../components/CrossPromoHub";
-import colors from "../constants/colors";
+import { useThemeColors } from "../constants/colors";
 import { BannerAdComponent } from "../services/AdManager";
 import { globalConfigContext } from "../context/AppContext";
 
@@ -28,6 +28,98 @@ export default function Settings() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { globalConfig } = useContext(globalConfigContext);
+  const colors = useThemeColors();
+  
+  const styles = useMemo(() => StyleSheet.create({
+    screen: {
+      flex: 1,
+    },
+    safeArea: {
+      flex: 1,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 20,
+      marginBottom: 20,
+    },
+    headerTextWrap: {
+      flex: 1,
+    },
+    heading: {
+      fontFamily: "Poppins-Bold",
+      fontSize: 28,
+      color: colors.TEXT,
+    },
+    closeButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: colors.CARD_BG,
+      borderWidth: 1,
+      borderColor: colors.CARD_BORDER,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    scrollContent: {
+      paddingHorizontal: 20,
+      paddingBottom: 40,
+      gap: 20,
+    },
+    panel: {
+      borderRadius: 24,
+      padding: 16,
+      borderWidth: 1,
+      backgroundColor: colors.CARD_BG,
+      borderColor: colors.CARD_BORDER,
+    },
+    sectionTitle: {
+      fontFamily: "Poppins-Bold",
+      fontSize: 14,
+      textTransform: "uppercase",
+      letterSpacing: 1.2,
+      marginBottom: 16,
+      color: colors.PRIMARY,
+    },
+    settingRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      borderRadius: 16,
+      backgroundColor: colors.CARD_BG,
+    },
+    iconWrap: {
+      width: 44,
+      height: 44,
+      borderRadius: 12,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 16,
+      backgroundColor: colors.CARD_BG,
+    },
+    copyWrap: {
+      flex: 1,
+    },
+    label: {
+      fontFamily: "Poppins-Bold",
+      fontSize: 15,
+      marginBottom: 2,
+      color: colors.TEXT,
+    },
+    hint: {
+      fontFamily: "Poppins-Regular",
+      fontSize: 12,
+      color: colors.MUTED,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: colors.CARD_BORDER,
+      marginVertical: 4,
+      marginHorizontal: 12,
+    },
+  }), [colors]);
 
   const handleContactUs = () => {
     const email = globalConfig?.email || "mindcraftlearning97@gmail.com";
@@ -104,7 +196,7 @@ export default function Settings() {
   };
 
   return (
-    <LinearGradient colors={[colors.BACKGROUND, "#0A1128"]} style={styles.screen}>
+    <LinearGradient colors={[colors.BACKGROUND, colors.DARK_INDIGO]} style={styles.screen}>
       <SafeAreaView
         style={[styles.safeArea, { paddingTop: insets.top + 8 }]}
         edges={["left", "right"]}
@@ -193,94 +285,3 @@ export default function Settings() {
     </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  headerTextWrap: {
-    flex: 1,
-  },
-  heading: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 28,
-    color: colors.TEXT,
-  },
-  closeButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.1)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-    gap: 20,
-  },
-  panel: {
-    borderRadius: 24,
-    padding: 16,
-    borderWidth: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.03)",
-    borderColor: "rgba(255, 255, 255, 0.08)",
-  },
-  sectionTitle: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 14,
-    textTransform: "uppercase",
-    letterSpacing: 1.2,
-    marginBottom: 16,
-    color: colors.PRIMARY,
-  },
-  settingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.02)",
-  },
-  iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-  },
-  copyWrap: {
-    flex: 1,
-  },
-  label: {
-    fontFamily: "Poppins-Bold",
-    fontSize: 15,
-    marginBottom: 2,
-    color: colors.TEXT,
-  },
-  hint: {
-    fontFamily: "Poppins-Regular",
-    fontSize: 12,
-    color: colors.MUTED,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    marginVertical: 4,
-    marginHorizontal: 12,
-  },
-});
