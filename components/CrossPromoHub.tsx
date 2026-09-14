@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Linking, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useAnalytics from '../services/useAnalytics';
+import { useThemeColors } from '../constants/colors';
 
 const FALLBACK_APPS = [
   {
@@ -41,6 +42,7 @@ const FALLBACK_APPS = [
 export default function CrossPromoHub() {
   const [apps] = useState(FALLBACK_APPS);
   const { logEvent } = useAnalytics();
+  const colors = useThemeColors();
 
   const handleAppPress = async (app) => {
     try {
@@ -54,7 +56,6 @@ export default function CrossPromoHub() {
       if (!alreadyClicked) {
         await AsyncStorage.setItem(storageKey, "true");
         logEvent('cross_promo_clicked', { app_slug: app.slug, app_name: app.name });
-        // TODO: Give user some in-app reward, like an alert
         console.log(`Rewarded user for clicking ${app.name}`);
       }
     } catch (err) {
@@ -64,17 +65,16 @@ export default function CrossPromoHub() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>More from Destya Studio</Text>
       {apps.map((app, index) => (
         <TouchableOpacity 
           key={index} 
-          style={styles.card} 
+          style={[styles.card, { backgroundColor: colors.CARD_BG, borderColor: colors.CARD_BORDER }]} 
           onPress={() => handleAppPress(app)}
         >
           <Image source={{ uri: app.icon }} style={styles.icon} />
           <View style={styles.info}>
-            <Text style={styles.appName}>{app.name}</Text>
-            <Text style={styles.appDesc}>{app.description}</Text>
+            <Text style={[styles.appName, { color: colors.TEXT }]}>{app.name}</Text>
+            <Text style={[styles.appDesc, { color: colors.MUTED }]}>{app.description}</Text>
           </View>
         </TouchableOpacity>
       ))}
@@ -84,29 +84,17 @@ export default function CrossPromoHub() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    paddingHorizontal: 16,
     backgroundColor: 'transparent',
     marginVertical: 10,
-  },
-  title: {
-    color: '#333',
-    fontSize: 20,
-    fontFamily: 'Poppins-Bold',
-    marginBottom: 16,
-    textAlign: 'center',
+    gap: 12,
   },
   card: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
     padding: 15,
     borderRadius: 16,
-    marginBottom: 15,
+    borderWidth: 1,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
   },
   icon: {
     width: 50,
@@ -118,12 +106,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   appName: {
-    color: '#333',
     fontSize: 14,
     fontFamily: 'Poppins-Bold',
   },
   appDesc: {
-    color: '#666',
     fontSize: 11,
     fontFamily: 'Poppins-Regular',
     marginTop: 2,

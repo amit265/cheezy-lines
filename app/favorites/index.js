@@ -142,7 +142,13 @@ export default function Index() {
           <Text style={styles.emptySubtitle}>
             {"You haven't saved any cheesy lines yet. Swipe right on your favorites to see them here!"}
           </Text>
-          <TouchableOpacity style={styles.exploreButton} onPress={() => router.push("/")}>
+          <TouchableOpacity style={styles.exploreButton} onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace("/");
+            }
+          }}>
             <Text style={styles.exploreButtonText}>Explore Lines</Text>
           </TouchableOpacity>
         </Animated.View>

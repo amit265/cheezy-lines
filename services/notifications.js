@@ -28,8 +28,16 @@ export const scheduleDailyReminder = async () => {
       return;
     }
 
-    // Cancel all previously scheduled notifications to avoid stacking
-    await Notifications.cancelAllScheduledNotificationsAsync();
+    // Check if it's already scheduled to avoid stacking and instant firing on app load
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    const alreadyScheduled = scheduled.some(
+      (notif) => notif.content.title === "Ready for your daily cheesy line? 🧀"
+    );
+    
+    if (alreadyScheduled) {
+      // console.log("Daily notification already scheduled.");
+      return;
+    }
 
     // Schedule daily notification at 7 PM
     await Notifications.scheduleNotificationAsync({

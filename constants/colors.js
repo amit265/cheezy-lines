@@ -1,4 +1,6 @@
 import { useColorScheme } from "react-native";
+import { useContext } from "react";
+import { themeContext } from "../context/AppContext";
 
 export const darkTheme = {
   // Deep Backgrounds
@@ -40,46 +42,55 @@ export const darkTheme = {
 
 export const lightTheme = {
   // Deep Backgrounds
-  BACKGROUND: "#F8F9FA", // Light clean background
+  BACKGROUND: "#FDF5E6", // Light clean background
   DARK_INDIGO: "#E9ECEF",
   
   // Neon Accents (Adapted for light theme)
-  NEON_PINK: "#E91E63",
-  ELECTRIC_CYAN: "#00BCD4",
-  BRAND_ORANGE: "#F57C00", // Slightly darker orange for better contrast
-  NEON_GREEN: "#4CAF50",
+  NEON_PINK: "#EE5242",
+  ELECTRIC_CYAN: "#00ACC1",
+  BRAND_ORANGE: "#EDAD53", 
+  NEON_GREEN: "#43A047",
   
-  // Glass Surfaces
-  CARD_BG: "rgba(0, 0, 0, 0.03)",
-  CARD_BORDER: "rgba(0, 0, 0, 0.08)",
+  // Glass Surfaces (Solid in light theme for visibility)
+  CARD_BG: "#FFFFFF",
+  CARD_BORDER: "rgba(93, 64, 55, 0.15)",
   
   // Text
   TEXT_LIGHT: "#FFFFFF",
-  TEXT_MUTED: "rgba(0, 0, 0, 0.6)",
+  TEXT_MUTED: "rgba(93, 64, 55, 0.6)",
   TEXT_DARK: "#050B14",
-  TEXT: "#121212",
-  MUTED: "rgba(0, 0, 0, 0.6)",
+  TEXT: "#5D4037",
+  MUTED: "rgba(93, 64, 55, 0.6)",
   
   // Gradients
-  GRADIENT_PRIMARY: ["#E91E63", "#F57C00"], // Pink to Orange
-  GRADIENT_SECONDARY: ["#00BCD4", "#E9ECEF"], // Cyan to light
+  GRADIENT_PRIMARY: ["#EE5242", "#EDAD53"], // Pink to Orange
+  GRADIENT_SECONDARY: ["#00ACC1", "#E9ECEF"], // Cyan to light
 
   // Standard legacy fallback if any component uses them
   FAMILY: "#4F2E2D",
   RANDOM: "#B14F0F",
-  FAVOURITES: "#F57C00",
+  FAVOURITES: "#98793C",
   ERROR : "#E53935",
   WARNING: "#FB8C00",
   INFO: "#00ACC1",
   SUCCESS: "#43A047",
-  PRIMARY: "#F57C00", 
+  PRIMARY: "#EDAD53", 
   SECONDARY: "#6C757D"
 };
 
 export const useThemeColors = () => {
   const scheme = useColorScheme();
-  return scheme === 'dark' ? darkTheme : lightTheme;
+  const themeCtx = useContext(themeContext);
+  
+  // Default to light if themeCtx is not provided or undefined
+  const manualTheme = themeCtx?.themePreference || 'light';
+  
+  if (manualTheme === 'system') {
+    return scheme === 'dark' ? darkTheme : lightTheme;
+  }
+  
+  return manualTheme === 'dark' ? darkTheme : lightTheme;
 };
 
-// Default export is darkTheme for backwards compatibility during refactor
-export default darkTheme;
+// Default export is lightTheme for backwards compatibility
+export default lightTheme;

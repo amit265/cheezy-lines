@@ -1,10 +1,10 @@
 import { adConfigContext } from "@/context/AppContext";
 import { useRouter } from "expo-router";
-import React, { useContext, useEffect, useState } from "react";
-import { Dimensions, Pressable, StyleSheet, Text, View, RefreshControl } from "react-native";
+import React, { useContext, useEffect } from "react";
+import { Pressable, StyleSheet, Text, View, RefreshControl } from "react-native";
 import { FlashList } from "@shopify/flash-list";
-import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+import { useThemeColors } from "../constants/colors";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -15,19 +15,25 @@ import Animated, {
   withSequence,
 } from "react-native-reanimated";
 
-const topicImages = {
-  coffee: "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=600&auto=format&fit=crop",
-  bar: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=600&auto=format&fit=crop",
-  smooth: "https://images.unsplash.com/photo-1518599904199-0ca897819ddb?q=80&w=600&auto=format&fit=crop",
-  funny: "https://images.unsplash.com/photo-1543789648-5221b369528d?q=80&w=600&auto=format&fit=crop",
-  nerd: "https://images.unsplash.com/photo-1522881113591-420042f4c475?q=80&w=600&auto=format&fit=crop",
-  gym: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=600&auto=format&fit=crop",
-  cute: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=600&auto=format&fit=crop",
-  dirty: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=600&auto=format&fit=crop",
-  default: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=600&auto=format&fit=crop"
+const getTopicDesign = (title) => {
+  const key = title?.toLowerCase() || "";
+  if (key.includes("cheesy")) return { icon: "pizza-outline", tint: "#FFB74D" };
+  if (key.includes("funny")) return { icon: "happy-outline", tint: "#FF69B4" };
+  if (key.includes("cute")) return { icon: "paw-outline", tint: "#FFB6C1" };
+  if (key.includes("clever") || key.includes("nerd")) return { icon: "bulb-outline", tint: "#87CEFA" };
+  if (key.includes("cringe")) return { icon: "sad-outline", tint: "#D8BFD8" };
+  if (key.includes("romantic") || key.includes("flirty")) return { icon: "flame-outline", tint: "#FF6347" };
+  if (key.includes("poetic")) return { icon: "book-outline", tint: "#F5DEB3" };
+  if (key.includes("sincere")) return { icon: "leaf-outline", tint: "#98FB98" };
+  if (key.includes("wholesome")) return { icon: "sunny-outline", tint: "#FFD700" };
+  if (key.includes("sarcastic")) return { icon: "chatbubble-ellipses-outline", tint: "#D3D3D3" };
+  if (key.includes("film")) return { icon: "videocam-outline", tint: "#FFFACD" };
+  if (key.includes("emotion")) return { icon: "water-outline", tint: "#87CEEB" };
+  if (key.includes("couple")) return { icon: "people-outline", tint: "#F08080" };
+  return { icon: "star-outline", tint: "#A9A9A9" };
 };
 
-const SkeletonCard = ({ isLeftColumn, itemMargin }) => {
+const SkeletonCard = ({ isLeftColumn, itemMargin, colors }) => {
   const opacity = useSharedValue(0.4);
 
   useEffect(() => {
@@ -44,14 +50,14 @@ const SkeletonCard = ({ isLeftColumn, itemMargin }) => {
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
     flex: 1,
-    height: 200,
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    borderColor: "rgba(255,255,255,0.05)",
+    height: 160,
+    backgroundColor: colors.CARD_BG,
+    borderColor: colors.CARD_BORDER,
     borderWidth: 1,
     borderRadius: 24,
     marginRight: isLeftColumn ? itemMargin / 2 : 0,
     marginLeft: isLeftColumn ? 0 : itemMargin / 2,
-    marginBottom: 10,
+    marginBottom: 15,
   }));
 
   return <Animated.View style={animatedStyle} />;
@@ -63,6 +69,7 @@ const AnimatedCard = ({
   itemMargin,
   isLeftColumn,
   onPress,
+  colors,
 }) => {
   const slideAnim = useSharedValue(50);
   const opacityAnim = useSharedValue(0);
@@ -91,17 +98,12 @@ const AnimatedCard = ({
       flex: 1,
       marginRight: isLeftColumn ? itemMargin / 2 : 0,
       marginLeft: isLeftColumn ? 0 : itemMargin / 2,
-      marginBottom: 10,
+      marginBottom: 15,
     };
   });
 
-  const titleKey = item?.title?.toLowerCase() || "";
-  let imageUrl = topicImages.default;
-  Object.keys(topicImages).forEach(key => {
-    if (titleKey.includes(key) || item?.id?.toLowerCase().includes(key)) {
-      imageUrl = topicImages[key];
-    }
-  });
+  const { icon, tint } = getTopicDesign(item?.title);
+  const lineCount = item?.lines?.length || 0;
 
   return (
     <Animated.View style={animatedStyle}>
@@ -109,20 +111,26 @@ const AnimatedCard = ({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={onPress}
-        style={styles.itemContainer}
+        style={[
+          styles.itemContainer,
+          { backgroundColor: colors.CARD_BG, borderColor: colors.CARD_BORDER }
+        ]}
       >
-        <Image
-          source={{ uri: imageUrl }}
-          style={StyleSheet.absoluteFillObject}
-          contentFit="cover"
-          transition={500}
-        />
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.8)']}
-          style={StyleSheet.absoluteFillObject}
-        />
-        <View style={styles.textContainer}>
-          <Text style={styles.buttonText}>{item?.title || ""}</Text>
+        <View style={styles.contentWrapper}>
+          {/* Top Section: Icon */}
+          <View style={[styles.iconWrapper, { backgroundColor: `${tint}15` }]}>
+            <Ionicons name={icon} size={32} color={tint} />
+          </View>
+          
+          {/* Bottom Section: Texts */}
+          <View style={styles.textWrapper}>
+            <Text style={[styles.buttonText, { color: colors.TEXT }]} numberOfLines={1}>
+              {item?.title || "Topic"}
+            </Text>
+            <Text style={[styles.subtitleText, { color: colors.TEXT_MUTED }]}>
+              {lineCount} {lineCount === 1 ? "Line" : "Lines"}
+            </Text>
+          </View>
         </View>
       </Pressable>
     </Animated.View>
@@ -132,8 +140,8 @@ const AnimatedCard = ({
 export default function TopicButton({ data, refreshing, onRefresh }) {
   const router = useRouter();
   const { setClickCount } = useContext(adConfigContext);
-
-  const itemMargin = 10;
+  const colors = useThemeColors();
+  const itemMargin = 15;
 
   if (!data || data.length === 0) {
     const skeletonData = Array.from({ length: 8 });
@@ -141,11 +149,11 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
       <View style={styles.container}>
         <FlashList
           data={skeletonData}
-          renderItem={({ index }) => <SkeletonCard isLeftColumn={index % 2 === 0} itemMargin={itemMargin} />}
+          renderItem={({ index }) => <SkeletonCard isLeftColumn={index % 2 === 0} itemMargin={itemMargin} colors={colors} />}
           numColumns={2}
           keyExtractor={(_, index) => `skeleton-${index}`}
           contentContainerStyle={styles.content}
-          estimatedItemSize={200}
+          estimatedItemSize={160}
         />
       </View>
     );
@@ -160,6 +168,7 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
         index={index}
         itemMargin={itemMargin}
         isLeftColumn={isLeftColumn}
+        colors={colors}
         onPress={() => {
           router.push({
             pathname: `/topics/${item?.id}`,
@@ -182,9 +191,9 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
         keyExtractor={(item, index) => `${item?.id}-${index}`}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        estimatedItemSize={200}
+        estimatedItemSize={160}
         refreshControl={
-          <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} tintColor="#FFA500" />
+          <RefreshControl refreshing={refreshing || false} onRefresh={onRefresh} tintColor={colors.BRAND_ORANGE || "#FFA500"} />
         }
       />
     </View>
@@ -197,30 +206,41 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
   },
   itemContainer: {
-    height: 200, // Taller cards for editorial look
-    borderRadius: 24,
-    width: "100%",
-    overflow: "hidden",
-    borderColor: "rgba(255,255,255,0.15)",
+    height: 160,
+    borderRadius: 28,
     borderWidth: 1,
+    overflow: "hidden",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 15,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  textContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "flex-end",
-    padding: 15,
+  contentWrapper: {
+    flex: 1,
+    padding: 20,
+    justifyContent: "space-between",
+  },
+  iconWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  textWrapper: {
+    gap: 4,
   },
   buttonText: {
-    color: "#FFFFFF",
     fontSize: 20,
     fontFamily: "Outfit-Bold",
     letterSpacing: 0.5,
   },
+  subtitleText: {
+    fontSize: 14,
+    fontFamily: "Outfit-Regular",
+  }
 });

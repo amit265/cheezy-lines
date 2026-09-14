@@ -25,7 +25,7 @@ export const generateCheesyLine = async (prompt) => {
   }
 
   if (!apiKey) {
-    throw new Error("NO_API_KEY");
+    throw new Error("Missing Groq API Key");
   }
 
   const systemPrompt = `You are a master of cheesy, funny, and romantic pickup lines. 
@@ -33,14 +33,18 @@ Generate exactly ONE cheesy pickup line based on the user's prompt.
 Keep it extremely short, punchy, and under 20 words. 
 Do NOT include hashtags, emojis, or explanations. Just the pickup line itself.`;
 
+  // Verified active chat models available on your account (copied from question-games)
   const fallbackModels = [
+    "llama-3.1-8b-instant",
     "llama-3.3-70b-versatile",
     "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
     "qwen/qwen3.8-27b",
     "qwen/qwen3.6-27b",
     "groq/compound",
   ];
 
+  let lastStatus = 0;
   let lastErrorMsg = "";
 
   for (const modelName of fallbackModels) {
@@ -48,8 +52,8 @@ Do NOT include hashtags, emojis, or explanations. Just the pickup line itself.`;
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${apiKey}`,
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model: modelName,
@@ -62,10 +66,18 @@ Do NOT include hashtags, emojis, or explanations. Just the pickup line itself.`;
         }),
       });
 
+      lastStatus = response.status;
+
       if (response.ok) {
         const data = await response.json();
-        if (data.choices && data.choices.length > 0) {
-          return data.choices[0].message.content.trim().replace(/^"|"$/g, '');
+        let text = data?.choices?.[0]?.message?.content?.trim() || "";
+        
+        // Clean any reasoning blocks or wrapping quotes
+        text = text.replace(/<think>[\s\S]*?(?:<\/think>|$)/g, "").trim();
+        text = text.replace(/^["']|["']$/g, "").trim();
+
+        if (text) {
+          return text;
         }
       } else {
         lastErrorMsg = await response.text();
@@ -80,5 +92,5 @@ Do NOT include hashtags, emojis, or explanations. Just the pickup line itself.`;
     console.error("All AI models failed. Last error:", lastErrorMsg);
   }
 
-  throw new Error("Failed to connect to AI. Please check your API key or internet connection.");
+  throw new Error("Spark is taking a quick breath. Tap Try Again to generate!");
 };

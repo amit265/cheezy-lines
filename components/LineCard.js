@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: "#000",
     textAlign: "center",
-    fontFamily: "Poppins-Bold",
+    fontFamily: "Playfair-Bold",
     paddingHorizontal: 20,
     lineHeight: 32,
   },

@@ -11,3 +11,6 @@ export const appsRegistryContext = createContext();
 export const aboutContext = createContext();
 export const announcementsContext = createContext();
 export const bannersContext = createContext();
+
+// Theme Context
+export const themeContext = createContext();

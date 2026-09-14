@@ -22,13 +22,34 @@ import { LinearGradient } from "expo-linear-gradient";
 import CrossPromoHub from "../components/CrossPromoHub";
 import { useThemeColors } from "../constants/colors";
 import { BannerAdComponent } from "../services/AdManager";
-import { globalConfigContext } from "../context/AppContext";
+import { globalConfigContext, themeContext, adConfigContext } from "../context/AppContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
+import * as Haptics from "expo-haptics";
 
 export default function Settings() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { globalConfig } = useContext(globalConfigContext);
+  const { themePreference, setThemePreference } = useContext(themeContext);
+  const { adConfig, setAdConfig } = useContext(adConfigContext);
   const colors = useThemeColors();
+  
+  // Developer tap logic
+  const devTapCount = React.useRef(0);
+  const lastDevTapTime = React.useRef(0);
+
+  const hapticTap = () => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+
+  const handleThemeChange = async (theme) => {
+    hapticTap();
+    setThemePreference(theme);
+    await AsyncStorage.setItem("ds_theme_preference", theme);
+  };
   
   const styles = useMemo(() => StyleSheet.create({
     screen: {
@@ -119,6 +140,42 @@ export default function Settings() {
       marginVertical: 4,
       marginHorizontal: 12,
     },
+    segmentWrap: {
+      flexDirection: 'row',
+      backgroundColor: 'rgba(0,0,0,0.05)',
+      borderRadius: 12,
+      padding: 4,
+      marginTop: 8,
+    },
+    segmentButton: {
+      flex: 1,
+      paddingVertical: 10,
+      alignItems: 'center',
+      borderRadius: 8,
+    },
+    segmentButtonActive: {
+      backgroundColor: colors.CARD_BG,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    segmentText: {
+      fontFamily: 'Poppins-Bold',
+      fontSize: 13,
+      color: colors.MUTED,
+    },
+    segmentTextActive: {
+      color: colors.TEXT,
+    },
+    versionText: {
+      fontFamily: 'Poppins-Regular',
+      fontSize: 12,
+      color: colors.MUTED,
+      textAlign: 'center',
+      opacity: 0.5,
+    }
   }), [colors]);
 
   const handleContactUs = () => {
@@ -240,6 +297,30 @@ export default function Settings() {
             </TouchableOpacity>
           </View>
 
+          {/* Appearance */}
+          <View style={styles.panel}>
+            <Text style={styles.sectionTitle}>
+              Appearance
+            </Text>
+            <View style={styles.segmentWrap}>
+              {['light', 'system', 'dark'].map((themeOpt) => {
+                const isActive = themePreference === themeOpt;
+                return (
+                  <TouchableOpacity
+                    key={themeOpt}
+                    style={[styles.segmentButton, isActive && styles.segmentButtonActive]}
+                    onPress={() => handleThemeChange(themeOpt)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.segmentText, isActive && styles.segmentTextActive]}>
+                      {themeOpt.charAt(0).toUpperCase() + themeOpt.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
           {/* Support and About */}
           <View style={styles.panel}>
             <Text style={styles.sectionTitle}>
@@ -278,7 +359,39 @@ export default function Settings() {
           </View>
           
         </ScrollView>
-        <View style={{ width: "100%", alignItems: "center", paddingBottom: insets.bottom || 20 }}>
+        <View style={{ width: "100%", alignItems: "center", paddingBottom: insets.bottom || 20, gap: 12 }}>
+          
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={async () => {
+              const now = Date.now();
+              if (now - lastDevTapTime.current > 1000) {
+                devTapCount.current = 1;
+              } else {
+                devTapCount.current += 1;
+              }
+              lastDevTapTime.current = now;
+              
+              if (devTapCount.current >= 5) {
+                devTapCount.current = 0;
+                hapticTap();
+                setTimeout(() => hapticTap(), 150);
+
+                try {
+                  const nextAdState = !adConfig?.showAds;
+                  setAdConfig(prev => ({ ...prev, showAds: nextAdState, showInterstitialAds: nextAdState, showAppOpenAds: nextAdState, showRewardedAds: nextAdState, showBannerAds: nextAdState }));
+                  await AsyncStorage.setItem("ds_is_ad_free", String(!nextAdState));
+                } catch (e) {
+                  console.error("Dev toggle error", e);
+                }
+              }
+            }}
+          >
+            <Text style={styles.versionText}>
+              App Version: {Constants.expoConfig?.version || "1.1.4"}
+            </Text>
+          </TouchableOpacity>
+
           <BannerAdComponent />
         </View>
       </SafeAreaView>

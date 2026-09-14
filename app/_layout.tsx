@@ -28,7 +28,6 @@ import MobileAds from "../components/MobileAdsProxy";
 import AdManager from "../services/AdManager";
 import localStorage from "@/services/localStorage";
 import { sampleTopics } from "@/constants/topics";
-import { sampleTopics } from "@/constants/topics";
 import useUpdateChecker from "../hooks/useUpdateChecker";
 import useDeepLinkHandler from "../hooks/useDeepLinkHandler";
 import { scheduleDailyReminder } from "../services/notifications";
@@ -42,6 +41,7 @@ import {
   aboutContext,
   announcementsContext,
   bannersContext,
+  themeContext,
 } from "../context/AppContext";
 
 // Default data from assets
@@ -67,6 +67,7 @@ function AppProviders({ children, values }) {
     favoritesValue,
     dbUpdateValue,
     adConfigValue,
+    themeValue,
   } = values;
 
   return (
@@ -81,8 +82,10 @@ function AppProviders({ children, values }) {
                     <favoritesContext.Provider value={favoritesValue}>
                       <dbUpdateContext.Provider value={dbUpdateValue}>
                         <adConfigContext.Provider value={adConfigValue}>
-                          <AdManager />
-                          {children}
+                          <themeContext.Provider value={themeValue}>
+                            <AdManager />
+                            {children}
+                          </themeContext.Provider>
                         </adConfigContext.Provider>
                       </dbUpdateContext.Provider>
                     </favoritesContext.Provider>
@@ -347,10 +350,14 @@ function RootLayout() {
   const [about, setAbout] = useState(defaultAbout);
   const [announcements, setAnnouncements] = useState(defaultAnnouncements);
   const [banners, setBanners] = useState(defaultBanners);
+  const [themePreference, setThemePreference] = useState("light");
 
   // ── Theme hooks (must be called before early returns) ──
+  const themeValue = useMemo(() => ({ themePreference, setThemePreference }), [themePreference]);
+
   const colors = useThemeColors();
-  const colorScheme = useColorScheme();
+  const manualTheme = themePreference;
+  const isDark = manualTheme === 'system' ? useColorScheme() === 'dark' : manualTheme === 'dark';
 
   // ── Memoized context values ──
   const dbUpdateValue = useMemo(() => ({ dbUpdate, setUpdate }), [dbUpdate]);
@@ -410,6 +417,25 @@ function RootLayout() {
 
       await localStorage.initializeLocalStorage(defaults);
 
+      import("@react-native-async-storage/async-storage").then(async ({ default: AsyncStorage }) => {
+        const storedTheme = await AsyncStorage.getItem("ds_theme_preference");
+        if (storedTheme) {
+          setThemePreference(storedTheme);
+        }
+        
+        const isAdFree = await AsyncStorage.getItem("ds_is_ad_free");
+        if (isAdFree === "true") {
+          setAdConfig(prev => ({ 
+            ...prev, 
+            showAds: false, 
+            showInterstitialAds: false, 
+            showAppOpenAds: false, 
+            showRewardedAds: false, 
+            showBannerAds: false 
+          }));
+        }
+      });
+
       const cachedConfig = await localStorage.getData(localStorage.KEYS.GLOBAL_CONFIG);
       const cachedApps = await localStorage.getData(localStorage.KEYS.APPS_REGISTRY);
       const cachedAbout = await localStorage.getData(localStorage.KEYS.ABOUT_SECTION);
@@ -466,6 +492,7 @@ function RootLayout() {
     favoritesValue,
     dbUpdateValue,
     adConfigValue,
+    themeValue,
   };
 
   return (
@@ -475,7 +502,7 @@ function RootLayout() {
     >
       <StatusBar
         backgroundColor={colors.BACKGROUND}
-        barStyle={colorScheme === 'dark' ? "light-content" : "dark-content"}
+        barStyle={isDark ? "light-content" : "dark-content"}
         hidden={false}
       />
       {Platform.OS === "web" ? (

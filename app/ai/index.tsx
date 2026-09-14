@@ -302,7 +302,7 @@ export default function AIGenerator() {
       backgroundColor: colors.CARD_BG,
     },
     resultText: {
-      fontFamily: "Playfair-BoldItalic",
+      fontFamily: "Playfair-Bold",
       fontSize: 26,
       color: colors.TEXT,
       textAlign: "center",
