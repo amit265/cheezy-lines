@@ -342,7 +342,7 @@ function RootLayout() {
     showAppOpenAds: true,
     showRewardedAds: true,
     showBannerAds: true,
-    testAds: __DEV__,
+    testAds: false,
     interstitialFrequency: 10,
     appOpenAdFrequency: 10,
   });
