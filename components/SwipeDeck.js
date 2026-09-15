@@ -15,7 +15,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import RNShare from "./ShareProxy";
+
 import * as Haptics from "expo-haptics";
 import * as StoreReview from "expo-store-review";
 import Feather from "@expo/vector-icons/Feather";
@@ -211,12 +211,8 @@ export default function SwipeDeck({ card }) {
             quality: 1.0,
             result: "tmpfile",
           });
-          // Use react-native-share to share both image and text seamlessly on all platforms
-          await RNShare.open({
-            url: uri, // local file URI
-            message: captionText,
-            title: "Share your cheesy line!", // Used in email subjects or similar intents
-          });
+          // Use expo-sharing to share image on all platforms safely (avoids iPad crash)
+          await Sharing.shareAsync(uri, { dialogTitle: "Share your cheesy line!" });
         } catch (error) {
           // console.error("Error", error);
         } finally {
@@ -503,7 +499,7 @@ export default function SwipeDeck({ card }) {
           cardIndex={0}
           backgroundColor={"transparent"}
           stackSize={3}
-          cardStyle={{ width: cardWidth, left: 20 }}
+          cardStyle={{ width: cardWidth, left: (width - cardWidth) / 2 }}
           cardVerticalMargin={0}
           cardHorizontalMargin={20}
           overlayLabels={{

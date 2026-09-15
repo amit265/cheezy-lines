@@ -12,7 +12,7 @@ import {
   Text,
   View,
 } from "react-native";
-import RNShare from "./ShareProxy";
+
 import { captureRef } from "react-native-view-shot";
 import { favoritesContext } from "../context/AppContext";
 import ShareCard from "./ShareCard";
@@ -89,11 +89,7 @@ export default function LineCard({ lines }) {
             result: "tmpfile",
           });
 
-            await RNShare.open({
-              url: uri, // local file URI
-              message: captionText,
-              title: "Share your cheesy line!", // Used in email subjects or similar intents
-            });
+            await Sharing.shareAsync(uri, { dialogTitle: "Share your cheesy line!" });
             logEvent('line_shared', { line_id: lines?.id });
           } catch (error) {
             // console.error("Error sharing", error);
