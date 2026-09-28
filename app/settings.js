@@ -29,6 +29,7 @@ import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import * as Haptics from "expo-haptics";
+import * as StoreReview from "expo-store-review";
 
 export default function Settings() {
   const router = useRouter();
@@ -42,6 +43,34 @@ export default function Settings() {
   
   const [hasCustomKey, setHasCustomKey] = React.useState(false);
   const [alertConfig, setAlertConfig] = React.useState(null);
+  const [adFreeTimeLeft, setAdFreeTimeLeft] = React.useState(null);
+
+  React.useEffect(() => {
+    let interval;
+    if (isAdFree) {
+      const updateTimer = async () => {
+        const untilStr = await AsyncStorage.getItem("ad_free_until");
+        if (untilStr) {
+          const until = parseInt(untilStr, 10);
+          const now = Date.now();
+          if (now < until) {
+            const diff = until - now;
+            const minutes = Math.floor(diff / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            setAdFreeTimeLeft(`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+          } else {
+            setAdFreeTimeLeft(null);
+            setIsAdFree(false);
+          }
+        }
+      };
+      updateTimer();
+      interval = setInterval(updateTimer, 1000);
+    } else {
+      setAdFreeTimeLeft(null);
+    }
+    return () => clearInterval(interval);
+  }, [isAdFree]);
 
   React.useEffect(() => {
     const checkCustomKey = async () => {
@@ -287,7 +316,18 @@ export default function Settings() {
     if (key === "contact") return handleContactUs();
     if (key === "privacy") return Linking.openURL(`${globalConfig?.legal?.privacyBaseUrl}/cheezylines/privacy` || "https://mindcraftlearning.github.io/cheezy-lines");
     if (key === "terms") return Linking.openURL(`${globalConfig?.legal?.termsBaseUrl}/cheezylines/terms` || "https://mindcraftlearning.github.io/cheezy-lines");
-    if (key === "reviews") return Linking.openURL(globalConfig?.socialLinks?.playStore || "https://destyastudio.com/products/cheezylines");
+    if (key === "reviews") {
+      StoreReview.requestReview().catch(() => {
+        if (Platform.OS === 'android') {
+          Linking.openURL("market://details?id=com.mindcraftlearning.cheezylines").catch(() => 
+            Linking.openURL("https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines")
+          );
+        } else {
+          Linking.openURL(globalConfig?.socialLinks?.appStore || "https://destyastudio.com/products/cheezylines");
+        }
+      });
+      return;
+    }
   };
 
   const renderIcon = (item, color) => {
@@ -298,7 +338,7 @@ export default function Settings() {
   const handleWatchAdForCredit = async () => {
     setAlertConfig({
       title: "Earn AI Credits",
-      message: "Would you like to watch a short video ad to earn 2 AI Credits and unlock 15 minutes of ad-free play?",
+      message: "Would you like to watch a short video ad to earn 2 AI Credits?",
       buttons: [
         { text: "Cancel", style: "cancel" },
         {
@@ -311,11 +351,7 @@ export default function Settings() {
                   const newCredits = Math.min(20, aiCredits + 2);
                   setAiCredits(newCredits);
                   AsyncStorage.setItem("ds_ai_credits", newCredits.toString());
-                  setAlertConfig({ title: "Success", message: "You earned +2 AI Credits and 15m ad-free play!" });
-                },
-                (until) => {
-                  setIsAdFree(true);
-                  setTimeout(() => setIsAdFree(false), until - Date.now());
+                  setAlertConfig({ title: "Success", message: "You earned +2 AI Credits!" });
                 }
               );
             } catch (error) {
@@ -404,9 +440,6 @@ export default function Settings() {
               >
                 <View>
                   <Text style={styles.actionBtnText}>Watch Ad (+2 AI Credits)</Text>
-                  <Text style={[styles.hint, { color: colors.BRAND_ORANGE, marginTop: 2 }]}>
-                    Includes 15m ad-free play
-                  </Text>
                 </View>
                 <Feather name="video" size={20} color={colors.BRAND_ORANGE} />
               </TouchableOpacity>
@@ -418,7 +451,7 @@ export default function Settings() {
                 activeOpacity={0.8}
               >
                 <View>
-                  <Text style={styles.actionBtnText}>{isAdFree ? "Ad-Free Active ✨" : "Watch Ad (15m Ad-Free)"}</Text>
+                  <Text style={styles.actionBtnText}>{isAdFree ? `Ad-Free Active (${adFreeTimeLeft || '...'}) ✨` : "Watch Ad (15m Ad-Free)"}</Text>
                   <Text style={[styles.hint, { color: colors.BRAND_ORANGE, marginTop: 2 }]}>
                     Stops interrupting ads
                   </Text>
