@@ -153,7 +153,7 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
     if (!data || data.length === 0) return [];
     const newData = [];
     data.forEach((item, index) => {
-      newData.push(item);
+      newData.push({ ...item, logicalIndex: index });
       // Inject an ad after the 8th item (so it appears further down in the grid)
       if (index === 7 && adConfig?.showBannerAds) {
         newData.push({ id: `ad-${index}`, isAd: true });
@@ -192,7 +192,7 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
     // The ad is injected at index 8. Items after the ad are shifted by 1 array index,
     // which flips their odd/even parity and messes up the flex grid margins. 
     // We adjust the logical index to maintain correct left/right column margins.
-    const logicalIndex = index > 8 ? index - 1 : index;
+    const logicalIndex = item.logicalIndex;
     const isLeftColumn = logicalIndex % 2 === 0;
 
     return (

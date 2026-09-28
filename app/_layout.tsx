@@ -369,8 +369,9 @@ function RootLayout() {
   const themeValue = useMemo(() => ({ themePreference, setThemePreference }), [themePreference]);
 
   const colors = useThemeColors();
+  const scheme = useColorScheme();
   const manualTheme = themePreference;
-  const isDark = manualTheme === 'system' ? useColorScheme() === 'dark' : manualTheme === 'dark';
+  const isDark = manualTheme === 'system' ? scheme === 'dark' : manualTheme === 'dark';
 
   // ── Memoized context values ──
   const dbUpdateValue = useMemo(() => ({ dbUpdate, setUpdate }), [dbUpdate]);

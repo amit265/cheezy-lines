@@ -214,7 +214,7 @@ export const BannerAdComponent = () => {
 
   const [isAdLoaded, setIsAdLoaded] = useState(false);
 
-  if (isAdFree || !adConfig.showBannerAds) return null;
+  if (!adConfig.showBannerAds) return null;
 
   return (
     <View
