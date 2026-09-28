@@ -21,7 +21,6 @@ import {
 } from "react-native";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import * as Sentry from "@sentry/react-native";
 
 import ErrorFallBack from "./ErrorFallback";
 import MobileAds from "../components/MobileAdsProxy";
@@ -54,8 +53,7 @@ import defaultAbout from "@/assets/data/about.json";
 import defaultAnnouncements from "@/assets/data/announcements.json";
 import defaultBanners from "@/assets/data/banners.json";
 
-// ─── Sentry & QueryClient ─────────────────────────────────────────────────────
-Sentry.init({ dsn: "" }); // Add your DSN here
+// ─── QueryClient ─────────────────────────────────────────────────────────────
 const queryClient = new QueryClient();
 
 // ─── App Providers ────────────────────────────────────────────────────────────
@@ -554,4 +552,4 @@ function RootLayout() {
   );
 }
 
-export default Sentry.wrap(RootLayout);
+export default RootLayout;
