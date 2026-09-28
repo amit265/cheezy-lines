@@ -9,6 +9,39 @@ export default function InlineNativeAd({ adConfig, containerStyle }) {
   const [hasError, setHasError] = useState(false);
   const colors = useThemeColors();
 
+  const styles = React.useMemo(() => StyleSheet.create({
+    hiddenContainer: {
+      position: 'absolute',
+      top: -1000,
+      opacity: 0,
+      overflow: 'hidden',
+    },
+    inlineAdContainer: {
+      backgroundColor: colors.CARD_BG,
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor: colors.CARD_BORDER,
+      elevation: 3,
+      shadowColor: colors.SHADOW,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.08,
+      shadowRadius: 10,
+      paddingVertical: 15,
+      paddingHorizontal: 10,
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+    },
+    sponsoredText: {
+      fontFamily: "Poppins-Bold",
+      color: colors.MUTED,
+      fontSize: 11,
+      marginBottom: 8,
+      alignSelf: "flex-start",
+      marginLeft: 10,
+    },
+  }), [colors]);
+
   if (hasError) return null;
 
   return (
@@ -27,35 +60,3 @@ export default function InlineNativeAd({ adConfig, containerStyle }) {
   );
 }
 
-const styles = StyleSheet.create({
-  hiddenContainer: {
-    position: 'absolute',
-    top: -1000,
-    opacity: 0,
-    overflow: 'hidden',
-  },
-  inlineAdContainer: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "rgba(0, 0, 0, 0.05)",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  sponsoredText: {
-    fontFamily: "Poppins-Bold",
-    color: "rgba(0,0,0,0.3)",
-    fontSize: 11,
-    marginBottom: 8,
-    alignSelf: "flex-start",
-    marginLeft: 10,
-  },
-});

@@ -127,7 +127,7 @@ export default function Settings() {
       height: 44,
       borderRadius: 22,
       backgroundColor: colors.CARD_BG,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.CARD_BORDER,
       justifyContent: "center",
       alignItems: "center",
@@ -140,7 +140,7 @@ export default function Settings() {
     panel: {
       borderRadius: 24,
       padding: 16,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       backgroundColor: colors.CARD_BG,
       borderColor: colors.CARD_BORDER,
     },
@@ -205,7 +205,7 @@ export default function Settings() {
     },
     segmentWrap: {
       flexDirection: 'row',
-      backgroundColor: 'rgba(0,0,0,0.05)',
+      backgroundColor: colors.CARD_BORDER,
       borderRadius: 12,
       padding: 4,
       marginTop: 8,
@@ -218,7 +218,7 @@ export default function Settings() {
     },
     segmentButtonActive: {
       backgroundColor: colors.CARD_BG,
-      shadowColor: '#000',
+      shadowColor: colors.SHADOW,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
@@ -314,8 +314,8 @@ export default function Settings() {
   const handlePress = (key) => {
     if (key === "share") return handleShare();
     if (key === "contact") return handleContactUs();
-    if (key === "privacy") return Linking.openURL(`${globalConfig?.legal?.privacyBaseUrl}/cheezylines/privacy` || "https://mindcraftlearning.github.io/cheezy-lines");
-    if (key === "terms") return Linking.openURL(`${globalConfig?.legal?.termsBaseUrl}/cheezylines/terms` || "https://mindcraftlearning.github.io/cheezy-lines");
+    if (key === "privacy") return Linking.openURL(`${globalConfig?.legal?.privacyBaseUrl}/cheezylines/privacy`);
+    if (key === "terms") return Linking.openURL(`${globalConfig?.legal?.termsBaseUrl}/cheezylines/terms`);
     if (key === "reviews") {
       StoreReview.requestReview().catch(() => {
         if (Platform.OS === 'android') {

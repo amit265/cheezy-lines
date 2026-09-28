@@ -54,7 +54,7 @@ const SkeletonCard = ({ isLeftColumn, itemMargin, colors }) => {
     height: 160,
     backgroundColor: colors.CARD_BG,
     borderColor: colors.CARD_BORDER,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 24,
     marginRight: isLeftColumn ? itemMargin / 2 : 0,
     marginLeft: isLeftColumn ? 0 : itemMargin / 2,
@@ -71,6 +71,7 @@ const AnimatedCard = ({
   isLeftColumn,
   onPress,
   colors,
+  styles,
 }) => {
   const slideAnim = useSharedValue(50);
   const opacityAnim = useSharedValue(0);
@@ -115,8 +116,8 @@ const AnimatedCard = ({
         style={[
           styles.itemContainer,
           { 
-            backgroundColor: "#FFFFFF", 
-            borderColor: "rgba(0, 0, 0, 0.05)" 
+            backgroundColor: colors.CARD_BG, 
+            borderColor: colors.CARD_BORDER 
           }
         ]}
       >
@@ -148,6 +149,57 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
   const { adConfig, setClickCount } = useContext(adConfigContext);
   const colors = useThemeColors();
   const itemMargin = 15;
+
+  const styles = React.useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    content: {
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+    },
+    itemContainer: {
+      height: 150,
+      borderRadius: 24,
+      borderWidth: StyleSheet.hairlineWidth,
+      overflow: "hidden",
+      shadowColor: colors.isDark ? "transparent" : colors.SHADOW,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: colors.isDark ? 0 : 0.08,
+      shadowRadius: 10,
+      elevation: colors.isDark ? 0 : 3,
+    },
+    contentWrapper: {
+      flex: 1,
+      padding: 16,
+      justifyContent: "space-between",
+    },
+    iconWrapper: {
+      width: 48,
+      height: 48,
+      borderRadius: 16,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    textWrapper: {
+      gap: 8,
+      alignItems: "flex-start",
+    },
+    buttonText: {
+      fontSize: 20,
+      fontFamily: "Poppins-Bold",
+      letterSpacing: 0.5,
+    },
+    badge: {
+      paddingHorizontal: 10,
+      paddingVertical: 3,
+      borderRadius: 10,
+    },
+    badgeText: {
+      fontSize: 11,
+      fontFamily: "Poppins-Bold",
+    }
+  }), [colors]);
 
   const dataWithAds = React.useMemo(() => {
     if (!data || data.length === 0) return [];
@@ -202,6 +254,7 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
         itemMargin={itemMargin}
         isLeftColumn={isLeftColumn}
         colors={colors}
+        styles={styles}
         onPress={() => {
           router.push(`/topics/${item?.id}`);
           setClickCount((prev) => prev + 1);
@@ -229,53 +282,4 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  itemContainer: {
-    height: 150,
-    borderRadius: 24,
-    borderWidth: 1,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  contentWrapper: {
-    flex: 1,
-    padding: 16,
-    justifyContent: "space-between",
-  },
-  iconWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  textWrapper: {
-    gap: 8,
-    alignItems: "flex-start",
-  },
-  buttonText: {
-    fontSize: 20,
-    fontFamily: "Poppins-Bold",
-    letterSpacing: 0.5,
-  },
-  badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 10,
-  },
-  badgeText: {
-    fontSize: 11,
-    fontFamily: "Poppins-Bold",
-  }
-});
+

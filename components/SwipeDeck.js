@@ -67,17 +67,17 @@ const stylesAdCard = (colors) => StyleSheet.create({
   card: {
     flex: 0.65,
     borderRadius: 30,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.CARD_BORDER,
     backgroundColor: colors.CARD_BG,
     justifyContent: "center",
     alignItems: "center",
     padding: 30,
     overflow: "hidden", 
-    elevation: 10,
-    shadowColor: "#000",
+    elevation: colors.isDark ? 0 : 10,
+    shadowColor: colors.isDark ? "transparent" : colors.SHADOW,
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
+    shadowOpacity: colors.isDark ? 0 : 0.5,
     shadowRadius: 15,
   }
 });
@@ -324,17 +324,17 @@ export default function SwipeDeck({ card }) {
     card: {
       flex: 0.65,
       borderRadius: 30,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.CARD_BORDER,
       backgroundColor: colors.CARD_BG,
       justifyContent: "center",
       alignItems: "center",
       padding: 30,
       overflow: "hidden", 
-      elevation: 10,
-      shadowColor: "#000",
+      elevation: colors.isDark ? 0 : 10,
+      shadowColor: colors.isDark ? "transparent" : colors.SHADOW,
       shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.5,
+      shadowOpacity: colors.isDark ? 0 : 0.5,
       shadowRadius: 15,
     },
     cardText: {
@@ -355,7 +355,7 @@ export default function SwipeDeck({ card }) {
       justifyContent: "center",
       alignItems: "center",
       elevation: 6,
-      shadowColor: "#000",
+      shadowColor: colors.SHADOW,
       shadowOffset: { width: 0, height: 6 },
       shadowOpacity: 0.15,
       shadowRadius: 10,
@@ -366,7 +366,7 @@ export default function SwipeDeck({ card }) {
       borderRadius: 30,
       backgroundColor: colors.CARD_BG,
       borderColor: colors.CARD_BORDER,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
     },
     likeButton: {
       width: 80,
@@ -387,7 +387,7 @@ export default function SwipeDeck({ card }) {
       borderRadius: 30,
       backgroundColor: colors.CARD_BG,
       borderColor: colors.CARD_BORDER,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
     },
     // Finished Screen Styles
     finishedTitle: {
@@ -419,7 +419,7 @@ export default function SwipeDeck({ card }) {
     },
     goBackButton: {
       backgroundColor: "transparent",
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.CARD_BORDER,
     },
     actionButtonText: {
@@ -427,6 +427,11 @@ export default function SwipeDeck({ card }) {
       fontFamily: "Poppins-Bold",
       color: "#FFF",
     },
+    actionButtonTextSecondary: {
+      fontSize: 16,
+      fontFamily: "Poppins-Bold",
+      color: colors.TEXT,
+    }
   }), [colors]);
 
   // --- 1. VIEW: FINISHED SCREEN (Animated) ---
@@ -455,7 +460,7 @@ export default function SwipeDeck({ card }) {
           style={[styles.actionButton, styles.goBackButton]}
           onPress={handleGoBack}
         >
-          <Text style={styles.actionButtonText}>🔙 Go Back</Text>
+          <Text style={styles.actionButtonTextSecondary}>🔙 Go Back</Text>
         </BouncyButton>
       </Animated.View>
     );

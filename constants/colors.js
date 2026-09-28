@@ -3,6 +3,7 @@ import { useContext } from "react";
 import { themeContext } from "../context/AppContext";
 
 export const darkTheme = {
+  isDark: true,
   // Deep Backgrounds
   BACKGROUND: "#050B14", // Deepest space blue
   DARK_INDIGO: "#081021",
@@ -16,7 +17,17 @@ export const darkTheme = {
   // Glass Surfaces
   CARD_BG: "rgba(255, 255, 255, 0.05)",
   CARD_BORDER: "rgba(255, 255, 255, 0.15)",
+  SURFACE: "#111827", // Solid surface for modals/cards
+  SHADOW: "#000000",
+  BORDER: "#374151",
+  MODAL_BG: "#1F2937",
+  HEADER_BG: "#050B14",
+  FAVORITES_BG: "#081021",
   
+  // Icons
+  ICON: "#FFFFFF",
+  ICON_ACTIVE: "#FF007F",
+
   // Text
   TEXT_LIGHT: "#FFFFFF",
   TEXT_MUTED: "rgba(255, 255, 255, 0.6)",
@@ -41,6 +52,7 @@ export const darkTheme = {
 };
 
 export const lightTheme = {
+  isDark: false,
   // Deep Backgrounds
   BACKGROUND: "#FDE9B3", // Light clean background
   DARK_INDIGO: "#E9ECEF",
@@ -54,6 +66,16 @@ export const lightTheme = {
   // Glass Surfaces (Solid in light theme for visibility)
   CARD_BG: "#FFFFFF",
   CARD_BORDER: "rgba(93, 64, 55, 0.15)",
+  SURFACE: "#FFFFFF",
+  SHADOW: "#000000",
+  BORDER: "#F0F0F0",
+  MODAL_BG: "#FFFFFF",
+  HEADER_BG: "#FDE9B3",
+  FAVORITES_BG: "#FFF3E0",
+
+  // Icons
+  ICON: "#5D4037",
+  ICON_ACTIVE: "#EE5242",
   
   // Text
   TEXT_LIGHT: "#FFFFFF",

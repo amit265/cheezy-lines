@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 15,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
   },
   icon: {

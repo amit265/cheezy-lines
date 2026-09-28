@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.15)", // Glass effect
     borderRadius: 30,
     padding: 40,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: "rgba(255, 255, 255, 0.4)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },

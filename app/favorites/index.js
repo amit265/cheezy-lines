@@ -12,9 +12,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import LineCard from "../../components/LineCard";
-import colors from "../../constants/colors";
+import { useThemeColors } from "../../constants/colors";
 import { favoritesContext, adConfigContext } from "../../context/AppContext";
-import { BannerAdComponent, getAdUnitId } from "../../services/AdManager";
+import { BannerAdComponent } from "../../services/AdManager";
 import InlineNativeAd from "../../components/InlineNativeAd";
 import Animated, {
   useSharedValue,
@@ -52,7 +52,94 @@ export default function Index() {
   const router = useRouter();
   const { favorites, setFavorites } = useContext(favoritesContext);
   const { adConfig } = useContext(adConfigContext);
+  const colors = useThemeColors();
   const [refreshing, setRefreshing] = useState(false);
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.BACKGROUND,
+      alignItems: "center",
+    },
+    headerContainer: {
+      paddingVertical: 10,
+      backgroundColor: colors.BACKGROUND,
+      display: "flex",
+      flexDirection: "row",
+      gap: 15,
+      width: "90%",
+      borderBottomWidth: 1,
+      borderColor: colors.BORDER,
+      alignItems: "center",
+      zIndex: 10,
+    },
+    headerText: {
+      color: colors.TEXT,
+      fontSize: 26,
+      fontFamily: "Poppins-Bold",
+      textAlign: "left",
+    },
+    bannerContainer: {
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.BACKGROUND,
+    },
+    buttonText: {
+      color: colors.TEXT,
+      fontSize: 16,
+      fontFamily: "Poppins-Regular",
+      textAlign: "left",
+    },
+    illustratedCircle: {
+      width: 150,
+      height: 150,
+      borderRadius: 75,
+      backgroundColor: colors.FAVORITES_BG,
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 30,
+      shadowColor: colors.BRAND_ORANGE,
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.3,
+      shadowRadius: 20,
+      elevation: 10,
+    },
+    emptyTitle: {
+      fontSize: 24,
+      fontFamily: "Poppins-Bold",
+      color: colors.TEXT,
+      marginBottom: 10,
+      textAlign: "center",
+    },
+    emptySubtitle: {
+      fontSize: 16,
+      fontFamily: "Poppins-Regular",
+      color: colors.MUTED,
+      textAlign: "center",
+      marginBottom: 40,
+      lineHeight: 24,
+    },
+    exploreButton: {
+      backgroundColor: colors.BRAND_ORANGE,
+      paddingVertical: 15,
+      paddingHorizontal: 40,
+      borderRadius: 30,
+      shadowColor: colors.BRAND_ORANGE,
+      shadowOffset: { width: 0, height: 5 },
+      shadowOpacity: 0.4,
+      shadowRadius: 10,
+      elevation: 5,
+    },
+    exploreButtonText: {
+      color: "#FFF", // Button text stays white for high contrast on orange
+      fontSize: 18,
+      fontFamily: "Poppins-Bold",
+    },
+  }), [colors]);
 
   const favoritesWithAds = useMemo(() => {
     if (!favorites || favorites.length === 0) return [];
@@ -151,7 +238,7 @@ export default function Index() {
       <Animated.View style={[styles.headerContainer, headerStyle]}>
         <Pressable onPressIn={handleBackPressIn} onPressOut={handleBackPressOut} hitSlop={10}>
           <Animated.View style={backBtnStyle}>
-            <Ionicons name="arrow-back-sharp" size={36} color="black" />
+            <Ionicons name="arrow-back-sharp" size={36} color={colors.ICON} />
           </Animated.View>
         </Pressable>
         <Text style={styles.headerText}>
@@ -163,7 +250,7 @@ export default function Index() {
       {favorites?.length === 0 ? (
         <Animated.View style={[{ flex: 1, justifyContent: "center", alignItems: "center", width: "100%", paddingHorizontal: 40 }, emptyStateStyle]}>
           <View style={styles.illustratedCircle}>
-            <Ionicons name="heart-dislike-outline" size={80} color="#FFB74D" />
+            <Ionicons name="heart-dislike-outline" size={80} color={colors.BRAND_ORANGE} />
           </View>
           <Text style={styles.emptyTitle}>No Favorites Yet</Text>
           <Text style={styles.emptySubtitle}>
@@ -188,7 +275,7 @@ export default function Index() {
             contentContainerStyle={{ paddingBottom: 60 }}
             estimatedItemSize={200}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#FFA500" />
+              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.BRAND_ORANGE} />
             }
           />
         </View>
@@ -200,88 +287,3 @@ export default function Index() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.BACKGROUND,
-    alignItems: "center",
-  },
-  headerContainer: {
-    paddingVertical: 10,
-    backgroundColor: colors.BACKGROUND,
-    display: "flex",
-    flexDirection: "row",
-    gap: 15,
-    width: "90%",
-    borderBottomWidth: 1,
-    alignItems: "center",
-    zIndex: 10,
-  },
-  headerText: {
-    color: "#000",
-    fontSize: 26,
-    fontFamily: "Poppins-Bold",
-    textAlign: "left",
-  },
-  bannerContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.BACKGROUND,
-  },
-  buttonText: {
-    color: "#000",
-    fontSize: 16,
-    fontFamily: "Poppins-Regular",
-    textAlign: "left",
-  },
-  illustratedCircle: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: "#FFF3E0", // Soft orange background
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 30,
-    shadowColor: "#FFB74D",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  emptyTitle: {
-    fontSize: 24,
-    fontFamily: "Poppins-Bold",
-    color: "#333",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  emptySubtitle: {
-    fontSize: 16,
-    fontFamily: "Poppins-Regular",
-    color: "#777",
-    textAlign: "center",
-    marginBottom: 40,
-    lineHeight: 24,
-  },
-  exploreButton: {
-    backgroundColor: "#FFB74D",
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 30,
-    shadowColor: "#FFB74D",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  exploreButtonText: {
-    color: "#FFF",
-    fontSize: 18,
-    fontFamily: "Poppins-Bold",
-  },
-});

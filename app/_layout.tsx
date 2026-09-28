@@ -27,11 +27,6 @@ import * as Sentry from "@sentry/react-native";
 Sentry.init({
   dsn: "https://7be170924eca8a3dbf226c1dff5e807f@o4511851560370176.ingest.us.sentry.io/4511852352700416",
   debug: false,
-  integrations: [
-    Sentry.expoRouterIntegration({
-      enableTimeToInitialDisplay: !isRunningInExpoGo(),
-    }),
-  ],
   enableNativeFramesTracking: !isRunningInExpoGo(),
 });
 

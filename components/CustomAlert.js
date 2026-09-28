@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     padding: 24,
     width: "100%",
     maxWidth: 340,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,

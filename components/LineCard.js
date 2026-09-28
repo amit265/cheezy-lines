@@ -2,7 +2,7 @@ import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import * as Sharing from "expo-sharing";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState, useMemo } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,13 +16,13 @@ import {
 import { captureRef } from "react-native-view-shot";
 import { favoritesContext } from "../context/AppContext";
 import ShareCard from "./ShareCard";
-import colors from "../constants/colors";
+import { useThemeColors } from "../constants/colors";
 import { triggerStoreReview } from "../services/storeReview";
 import useAnalytics from "../services/useAnalytics";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, withSequence, runOnJS } from "react-native-reanimated";
 
 // --- SUB-COMPONENT: Bouncy Icon Button ---
-const BouncyIconButton = ({ icon, onPress, library = "Ionicons", color = "#000" }) => {
+const BouncyIconButton = ({ icon, onPress, library = "Ionicons", color, style }) => {
   const scaleAnim = useSharedValue(1);
 
   const handlePressIn = () => {
@@ -42,7 +42,7 @@ const BouncyIconButton = ({ icon, onPress, library = "Ionicons", color = "#000" 
   }));
 
   return (
-    <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut} style={styles.iconButton}>
+    <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut} style={style}>
       <Animated.View style={animatedStyle}>
         {library === "FontAwesome" ? (
           <FontAwesome name={icon} size={26} color={color} />
@@ -60,6 +60,92 @@ export default function LineCard({ lines }) {
   const shareCardRef = useRef();
   const [isSharing, setIsSharing] = useState(false);
   const { logEvent } = useAnalytics();
+  
+  const colors = useThemeColors();
+  const styles = useMemo(() => StyleSheet.create({
+    card: {
+      margin: 16,
+      backgroundColor: colors.CARD_BG,
+      borderRadius: 30,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.CARD_BORDER,
+      elevation: colors.isDark ? 0 : 8,
+      shadowColor: colors.isDark ? "transparent" : colors.SHADOW,
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: colors.isDark ? 0 : 0.1,
+      shadowRadius: 15,
+      paddingBottom: 15,
+    },
+    textContainer: {
+      backgroundColor: "transparent",
+      padding: 20,
+      minHeight: 220,
+      justifyContent: "center",
+    },
+    text: {
+      fontSize: 22,
+      color: colors.TEXT,
+      textAlign: "center",
+      fontFamily: "Poppins-Bold",
+      paddingHorizontal: 20,
+      lineHeight: 32,
+    },
+    buttonRow: {
+      flexDirection: "row",
+      justifyContent: "space-evenly",
+      alignItems: "center",
+      marginTop: -20,
+      marginBottom: 10,
+    },
+    iconButton: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: colors.SURFACE,
+      justifyContent: "center",
+      alignItems: "center",
+      elevation: colors.isDark ? 0 : 4,
+      shadowColor: colors.isDark ? "transparent" : colors.SHADOW,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: colors.isDark ? 0 : 0.15,
+      shadowRadius: 8,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.BORDER,
+    },
+    loaderContainer: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: colors.SURFACE,
+      justifyContent: "center",
+      alignItems: "center",
+      elevation: colors.isDark ? 0 : 4,
+      shadowColor: colors.isDark ? "transparent" : colors.SHADOW,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: colors.isDark ? 0 : 0.15,
+      shadowRadius: 8,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.BORDER,
+    },
+    leftComma: {
+      fontSize: 50,
+      color: colors.BRAND_ORANGE,
+      opacity: 0.3,
+      fontFamily: "Poppins-Bold",
+      textAlign: "left",
+      marginLeft: 5,
+      marginBottom: -20,
+    },
+    rightComma: {
+      fontSize: 50,
+      color: colors.BRAND_ORANGE,
+      opacity: 0.3,
+      fontFamily: "Poppins-Bold",
+      textAlign: "right",
+      marginRight: 5,
+      marginTop: -20,
+    },
+  }), [colors]);
 
   // --- ANIMATION REFS ---
   const heartScale = useSharedValue(1);
@@ -170,28 +256,32 @@ export default function LineCard({ lines }) {
         {/* Favorite Button with Special Pop Animation Wrapper */}
         <Animated.View style={heartStyle}>
           <BouncyIconButton
+            style={styles.iconButton}
             icon={isFavorite ? "close" : "heart-outline"} // Keeping your logic (close if favorite)
-            color={isFavorite ? colors.BRAND_ORANGE : "#000"} // Orange when favorite
+            color={isFavorite ? colors.BRAND_ORANGE : colors.ICON} // Orange when favorite
             onPress={addFavorite}
           />
         </Animated.View>
 
         {/* Copy Button */}
         <BouncyIconButton
+          style={styles.iconButton}
           icon={copy ? "checkmark-circle" : "copy-outline"} // Changed "copy" to checkmark for better feedback
-          color={copy ? "#4CAF50" : "#000"} // Green when copied
+          color={copy ? "#4CAF50" : colors.ICON} // Green when copied
           onPress={handleCopy}
         />
        
         {/* Share Button */}
         {isSharing ? (
           <View style={styles.loaderContainer}>
-             <ActivityIndicator size="small" color="#000" />
+             <ActivityIndicator size="small" color={colors.ICON} />
           </View>
         ) : (
           <BouncyIconButton 
+            style={styles.iconButton}
             icon="send-o" 
-            library="FontAwesome" 
+            library="FontAwesome"
+            color={colors.ICON}
             onPress={shareImage} 
           />
         )}
@@ -199,88 +289,3 @@ export default function LineCard({ lines }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    margin: 16,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: colors.CARD_BORDER || "#E5E5E5",
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-    paddingBottom: 15,
-  },
-  textContainer: {
-    backgroundColor: "transparent",
-    padding: 20,
-    minHeight: 220,
-    justifyContent: "center",
-  },
-  text: {
-    fontSize: 22,
-    color: "#000",
-    textAlign: "center",
-    fontFamily: "Poppins-Bold",
-    paddingHorizontal: 20,
-    lineHeight: 32,
-  },
-  buttonRow: {
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    alignItems: "center",
-    marginTop: -20,
-    marginBottom: 10,
-  },
-  iconButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#FFF",
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    borderWidth: 1,
-    borderColor: "#F0F0F0",
-  },
-  loaderContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#FFF",
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    borderWidth: 1,
-    borderColor: "#F0F0F0",
-  },
-  leftComma: {
-    fontSize: 50,
-    color: colors.BRAND_ORANGE,
-    opacity: 0.3,
-    fontFamily: "Poppins-Bold",
-    textAlign: "left",
-    marginLeft: 5,
-    marginBottom: -20,
-  },
-  rightComma: {
-    fontSize: 50,
-    color: colors.BRAND_ORANGE,
-    opacity: 0.3,
-    fontFamily: "Poppins-Bold",
-    textAlign: "right",
-    marginRight: 5,
-    marginTop: -20,
-  },
-});

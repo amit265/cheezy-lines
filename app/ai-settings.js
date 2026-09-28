@@ -66,7 +66,7 @@ export default function AISettings() {
       padding: 25,
       alignItems: "center",
       marginBottom: 30,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.PRIMARY + "30",
     },
     cardTitle: {
@@ -136,7 +136,7 @@ export default function AISettings() {
       backgroundColor: colors.CARD_BG,
       padding: 20,
       borderRadius: 16,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.CARD_BORDER,
     },
     inputLabel: {
@@ -147,7 +147,7 @@ export default function AISettings() {
     },
     input: {
       backgroundColor: colors.BACKGROUND,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.CARD_BORDER,
       borderRadius: 10,
       padding: 15,

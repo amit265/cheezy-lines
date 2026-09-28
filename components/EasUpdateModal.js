@@ -9,6 +9,60 @@ export const EasUpdateModal = () => {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [updating, setUpdating] = useState(false);
 
+  const styles = React.useMemo(() => StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.6)', // Dimmer overlay
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
+    },
+    modalCard: {
+      width: '100%',
+      maxWidth: 380,
+      padding: 24,
+      borderRadius: 24,
+      alignItems: 'center',
+      elevation: 16,
+      shadowColor: colors.SHADOW,
+      shadowOpacity: 0.3,
+      shadowRadius: 20,
+    },
+    iconCircle: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    title: {
+      fontFamily: 'Poppins-Bold',
+      fontSize: 22,
+      textAlign: 'center',
+      marginBottom: 8,
+    },
+    description: {
+      fontFamily: 'Poppins-Regular',
+      fontSize: 14,
+      textAlign: 'center',
+      lineHeight: 22,
+      marginBottom: 24,
+    },
+    button: {
+      width: '100%',
+      paddingVertical: 14,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    buttonText: {
+      fontFamily: 'Poppins-Bold',
+      fontSize: 16,
+      color: '#FFF',
+    },
+  }), [colors]);
+
   useEffect(() => {
     if (__DEV__ || Platform.OS === 'web') return; // Skip in dev or web mode
 
@@ -71,56 +125,3 @@ export const EasUpdateModal = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modalCard: {
-    width: '100%',
-    maxWidth: 380,
-    padding: 24,
-    borderRadius: 24,
-    alignItems: 'center',
-    elevation: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-  },
-  iconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  title: {
-    fontFamily: 'Poppins-Bold',
-    fontSize: 22,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  description: {
-    fontFamily: 'Poppins-Regular',
-    fontSize: 14,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 24,
-  },
-  button: {
-    width: '100%',
-    paddingVertical: 14,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    fontFamily: 'Poppins-Bold',
-    fontSize: 16,
-    color: '#FFF',
-  },
-});

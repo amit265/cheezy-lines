@@ -1,7 +1,7 @@
-import colors from "@/constants/colors";
+import { useThemeColors } from "@/constants/colors";
 import Feather from "@expo/vector-icons/Feather";
 import { useRouter } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { BlurView } from "expo-blur";
 import Animated, {
@@ -15,6 +15,7 @@ import Animated, {
 
 export default function Header() {
   const router = useRouter();
+  const colors = useThemeColors();
 
   const heartScale = useSharedValue(1);
   const settingsRotate = useSharedValue(0);
@@ -80,6 +81,60 @@ export default function Header() {
     transform: [{ rotate: `${-aiSpin.value * 360}deg` }],
   }));
 
+  const styles = useMemo(() => StyleSheet.create({
+    headerOuter: {
+      width: "100%",
+      alignItems: "center",
+    },
+    headerContainer: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      width: "90%",
+      paddingVertical: 15,
+      paddingHorizontal: 20,
+      borderRadius: 30,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.CARD_BORDER,
+      overflow: "hidden",
+      marginTop: 10,
+      marginBottom: 10,
+    },
+    headerOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: colors.HEADER_BG,
+      opacity: 0.8, // Blur + Opacity looks nice in both themes
+      zIndex: -1,
+    },
+    title: {
+      fontFamily: "Baloo2",
+      fontSize: 26,
+      color: colors.TEXT,
+    },
+    iconContainer: {
+      display: "flex",
+      flexDirection: "row",
+      gap: 15,
+      alignItems: "center",
+    },
+    aiWrapper: {
+      width: 26,
+      height: 26,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    absoluteCenter: {
+      position: 'absolute',
+    },
+    aiText: {
+      fontFamily: 'Poppins-Bold',
+      fontSize: 12,
+      color: colors.BRAND_ORANGE,
+      letterSpacing: 1,
+    },
+  }), [colors]);
+
   return (
     <View style={styles.headerOuter}>
       <BlurView intensity={50} tint="default" style={styles.headerContainer}>
@@ -126,7 +181,7 @@ export default function Header() {
           }}
         >
           <Animated.View style={settingsStyle}>
-            <Feather name="settings" size={26} color="#5D4037" />
+            <Feather name="settings" size={26} color={colors.ICON} />
           </Animated.View>
         </TouchableOpacity>
       </View>
@@ -134,56 +189,3 @@ export default function Header() {
   </View>
   );
 }
-
-const styles = StyleSheet.create({
-  headerOuter: {
-    width: "100%",
-    alignItems: "center",
-  },
-  headerContainer: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "90%",
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.05)",
-    overflow: "hidden",
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  headerOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(253, 233, 179, 0.4)", // colors.BACKGROUND with opacity
-    zIndex: -1,
-  },
-  title: {
-    fontFamily: "Baloo2",
-    fontSize: 26,
-    color: "#5D4037",
-  },
-  iconContainer: {
-    display: "flex",
-    flexDirection: "row",
-    gap: 15,
-    alignItems: "center",
-  },
-  aiWrapper: {
-    width: 26,
-    height: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  absoluteCenter: {
-    position: 'absolute',
-  },
-  aiText: {
-    fontFamily: 'Poppins-Bold',
-    fontSize: 12,
-    color: colors.BRAND_ORANGE,
-    letterSpacing: 1,
-  },
-});

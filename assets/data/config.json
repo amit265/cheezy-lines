@@ -25,8 +25,8 @@
     "email": "hello@destyastudio.com"
   },
   "legal": {
-    "privacyBaseUrl": "https://destyastudio.com/apps",
-    "termsBaseUrl": "https://destyastudio.com/apps"
+    "privacyBaseUrl": "https://destyastudio.com/legal",
+    "termsBaseUrl": "https://destyastudio.com/legal"
   },
   "features": {
     "showMoreApps": true,
