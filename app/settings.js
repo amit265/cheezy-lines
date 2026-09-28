@@ -323,7 +323,9 @@ export default function Settings() {
             Linking.openURL("https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines")
           );
         } else {
-          Linking.openURL(globalConfig?.socialLinks?.appStore || "https://destyastudio.com/products/cheezylines");
+          Linking.openURL("https://apps.apple.com/app/id6811904095?action=write-review").catch(() => 
+            Linking.openURL(globalConfig?.socialLinks?.appStore || "https://destyastudio.com/products/cheezylines")
+          );
         }
       });
       return;
