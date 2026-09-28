@@ -135,7 +135,7 @@ export default function DynamicBackground({ children }) {
         <Animated.View style={[styles.orb, styles.orb2, orb2Style]} />
         <Animated.View style={[styles.orb, styles.orb3, orb3Style]} />
       </View>
-      <BlurView intensity={80} tint="default" style={styles.blurLayer} />
+      <BlurView intensity={80} tint={colors.isDark ? "dark" : "light"} style={styles.blurLayer} />
       <View style={styles.contentLayer}>{children}</View>
     </View>
   );

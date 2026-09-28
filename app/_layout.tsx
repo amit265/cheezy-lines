@@ -7,7 +7,7 @@ import { PlayfairDisplay_400Regular, PlayfairDisplay_700Bold, PlayfairDisplay_70
 import * as Network from "expo-network";
 import { ErrorBoundary } from "react-error-boundary";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { useThemeColors } from "@/constants/colors";
+import { useThemeColors, darkTheme, lightTheme } from "@/constants/colors";
 import {
   Alert,
   Linking,
@@ -374,10 +374,10 @@ function RootLayout() {
   // ── Theme hooks (must be called before early returns) ──
   const themeValue = useMemo(() => ({ themePreference, setThemePreference }), [themePreference]);
 
-  const colors = useThemeColors();
   const scheme = useColorScheme();
   const manualTheme = themePreference;
   const isDark = manualTheme === 'system' ? scheme === 'dark' : manualTheme === 'dark';
+  const colors = isDark ? darkTheme : lightTheme;
 
   // ── Memoized context values ──
   const dbUpdateValue = useMemo(() => ({ dbUpdate, setUpdate }), [dbUpdate]);

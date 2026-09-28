@@ -137,7 +137,7 @@ export default function Header() {
 
   return (
     <View style={styles.headerOuter}>
-      <BlurView intensity={50} tint="default" style={styles.headerContainer}>
+      <BlurView intensity={50} tint={colors.isDark ? "dark" : "light"} style={styles.headerContainer}>
         <View style={styles.headerOverlay} />
         <Text style={styles.title}>
           Cheesy Lines
