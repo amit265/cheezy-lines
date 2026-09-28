@@ -11,7 +11,6 @@ import Animated, {
   withTiming,
   withSequence,
   withRepeat,
-  runOnJS,
 } from "react-native-reanimated";
 
 export default function Header() {
