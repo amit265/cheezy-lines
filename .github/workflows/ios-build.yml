@@ -1,0 +1,83 @@
+name: 🍎 iOS Build & TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'Build profile'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - preview
+
+jobs:
+  build-and-submit-ios:
+    name: Build iOS & Submit to TestFlight
+    runs-on: macos-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: 💎 Setup Ruby & CocoaPods
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: false
+
+      - name: 🪵 Install CocoaPods and Fastlane
+        run: gem install cocoapods fastlane
+
+      - name: 📥 Install Node dependencies
+        run: npm ci
+
+      - name: 📋 Validate and Fix Dependencies
+        run: npx expo install --check --fix || npx expo install
+
+      - name: 🛠️ Install EAS CLI
+        run: npm install -g eas-cli@latest
+
+      - name: 🔑 Generate App Store Connect API Key JSON
+        env:
+          B64_KEY: ${{ secrets.ASC_API_KEY_CONTENT }}
+          KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          mkdir -p /tmp/asc
+          python3 -c '
+          import json, os, base64
+          content = base64.b64decode(os.environ["B64_KEY"]).decode("utf-8")
+          with open("/tmp/asc/api_key.json", "w") as f:
+              json.dump({
+                  "key_id": os.environ["KEY_ID"],
+                  "issuer_id": os.environ["ISSUER_ID"],
+                  "key": content
+              }, f)
+          '
+
+      - name: 🔨 Build iOS locally (EAS manages signing credentials)
+        run: |
+          eas build \
+            --platform ios \
+            --profile ${{ github.event.inputs.profile }} \
+            --local \
+            --non-interactive \
+            --output ${{ github.workspace }}/build/app.ipa
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 🚀 Submit to TestFlight via Fastlane (Zero Queue Time)
+        run: |
+          fastlane pilot upload \
+            --ipa ${{ github.workspace }}/build/app.ipa \
+            --api_key_path /tmp/asc/api_key.json \
+            --skip_waiting_for_build_processing true
