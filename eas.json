@@ -48,6 +48,10 @@
       "android": {
         "serviceAccountKeyPath": "./google-services-key.json",
         "track": "production"
+      },
+      "ios": {
+        "appleId": "dev@destyastudio.com",
+        "ascAppId": "6811904095"
       }
     }
   }
