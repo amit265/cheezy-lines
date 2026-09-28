@@ -6,17 +6,18 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import DynamicBackground from "../../components/DynamicBackground";
 import SwipeDeck from "../../components/SwipeDeck";
 import { useThemeColors } from "../../constants/colors";
-import { adConfigContext } from "../../context/AppContext";
+import { adConfigContext, dataContext } from "../../context/AppContext";
 import { BannerAdComponent } from "../../services/AdManager";
 
 export default function Topic() {
-  const { dataParams } = useLocalSearchParams();
+  const { topic } = useLocalSearchParams();
   const { adConfig } = useContext(adConfigContext);
+  const { data: allData } = useContext(dataContext);
   const router = useRouter();
   const colors = useThemeColors();
 
   // Safety check in case params are missing
-  const data = dataParams ? JSON.parse(dataParams) : {};
+  const data = useMemo(() => allData?.find(t => t.id === topic) || {}, [allData, topic]);
   const lines = data?.lines || [];
 
   const styles = useMemo(() => StyleSheet.create({

@@ -203,12 +203,7 @@ export default function TopicButton({ data, refreshing, onRefresh }) {
         isLeftColumn={isLeftColumn}
         colors={colors}
         onPress={() => {
-          router.push({
-            pathname: `/topics/${item?.id}`,
-            params: {
-              dataParams: JSON.stringify(item),
-            },
-          });
+          router.push(`/topics/${item?.id}`);
           setClickCount((prev) => prev + 1);
         }}
       />

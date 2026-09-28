@@ -21,29 +21,16 @@ export default function Header() {
   const settingsRotate = useSharedValue(0);
   const aiSpin = useSharedValue(0);
 
-  const animateHeart = (callback) => {
+  const animateHeart = () => {
     heartScale.value = withSequence(
       withTiming(1.3, { duration: 150 }),
-      withSpring(1, { damping: 4, stiffness: 40 }, (finished) => {
-        if (finished && callback) {
-          runOnJS(callback)();
-        }
-      })
+      withSpring(1, { damping: 4, stiffness: 40 })
     );
   };
 
-  const animateSettings = (callback) => {
+  const animateSettings = () => {
     settingsRotate.value = 0;
-    settingsRotate.value = withTiming(
-      1,
-      { duration: 600 },
-      (finished) => {
-        if (finished) {
-          settingsRotate.value = 0;
-          if (callback) runOnJS(callback)();
-        }
-      }
-    );
+    settingsRotate.value = withTiming(1, { duration: 600 });
   };
 
   useEffect(() => {
@@ -122,7 +109,8 @@ export default function Header() {
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => {
-            animateHeart(() => router.push("/favorites"));
+            animateHeart();
+            setTimeout(() => router.push("/favorites"), 150);
           }}
         >
           <Animated.View style={heartStyle}>
@@ -134,7 +122,8 @@ export default function Header() {
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => {
-            animateSettings(() => router.push("/settings"));
+            animateSettings();
+            setTimeout(() => router.push("/settings"), 150);
           }}
         >
           <Animated.View style={settingsStyle}>
