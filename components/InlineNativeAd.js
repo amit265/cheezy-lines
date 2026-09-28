@@ -29,7 +29,8 @@ export default function InlineNativeAd({ adConfig, containerStyle }) {
 
 const styles = StyleSheet.create({
   hiddenContainer: {
-    height: 1,
+    position: 'absolute',
+    top: -1000,
     opacity: 0,
     overflow: 'hidden',
   },

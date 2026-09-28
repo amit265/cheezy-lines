@@ -218,10 +218,11 @@ export const BannerAdComponent = () => {
 
   return (
     <View
-      style={{
-        opacity: isAdLoaded ? 1 : 0,
-        height: isAdLoaded ? undefined : 0,
-      }}
+      style={
+        isAdLoaded
+          ? { opacity: 1 }
+          : { opacity: 0, position: "absolute", top: -1000 }
+      }
     >
       <BannerAd
         unitId={getAdUnitId("banner", adConfig.testAds)}

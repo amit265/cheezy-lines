@@ -26,6 +26,7 @@ import * as Sentry from "@sentry/react-native";
 import ErrorFallBack from "./ErrorFallback";
 import MobileAds from "../components/MobileAdsProxy";
 import AdManager from "../services/AdManager";
+import { EasUpdateModal } from "../components/EasUpdateModal";
 import localStorage from "@/services/localStorage";
 import { sampleTopics } from "@/constants/topics";
 import useUpdateChecker from "../hooks/useUpdateChecker";
@@ -544,6 +545,7 @@ function RootLayout() {
         <View style={{ flex: 1 }}>
           <AppProviders values={contextValues}>
             <Stack screenOptions={{ headerShown: false }} />
+            <EasUpdateModal />
           </AppProviders>
         </View>
       )}
