@@ -242,8 +242,8 @@ export default function Settings() {
   }), [colors]);
 
   const handleContactUs = () => {
-    const email = globalConfig?.email || "mindcraftlearning97@gmail.com";
-    const subject = `Support Request for ${globalConfig?.brandName || "Cheesy Lines"}`;
+    const email = globalConfig?.email;
+    const subject = `Support Request for ${globalConfig?.brandName || "Cheezy Lines"}`;
     const body = "Hi, I need help with...";
     const url = `mailto:${email}?subject=${encodeURIComponent(
       subject
