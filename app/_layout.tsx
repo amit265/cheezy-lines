@@ -38,6 +38,7 @@ import localStorage from "@/services/localStorage";
 import { sampleTopics } from "@/constants/topics";
 import useUpdateChecker from "../hooks/useUpdateChecker";
 import useDeepLinkHandler from "../hooks/useDeepLinkHandler";
+import { useDestyaConfig } from "../hooks/useDestyaConfig";
 import { scheduleDailyReminder } from "../services/notifications";
 import {
   adConfigContext,
@@ -65,7 +66,7 @@ import defaultBanners from "@/assets/data/banners.json";
 const queryClient = new QueryClient();
 
 // ─── App Providers ────────────────────────────────────────────────────────────
-function AppProviders({ children, values }) {
+function AppProviders({ children, values }: { children?: React.ReactNode; values: any }) {
   const {
     globalConfigValue,
     appsRegistryValue,
@@ -121,7 +122,7 @@ const PRODUCT_URL = "https://destyastudio.com/products/cheezylines";
 // Routes that are freely accessible as a preview on web
 const WEB_PREVIEW_ROUTES = ["/", "/index"];
 
-function WebGateModal({ visible, onClose }) {
+function WebGateModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   if (!visible) return null;
   return (
     <View style={{
@@ -189,7 +190,7 @@ function WebGateModal({ visible, onClose }) {
 }
 
 // ─── Web Layout (phone frame + optional landscape panel) ──────────────────────
-function WebLayout({ values }) {
+function WebLayout({ values }: { values: any }) {
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height && width > 768;
   const pathname = usePathname();
@@ -311,7 +312,7 @@ function WebLayout({ values }) {
 // ─── Root Layout ──────────────────────────────────────────────────────────────
 function RootLayout() {
   useDeepLinkHandler();
-  const { updateAvailable, updateInfo } = useUpdateChecker();
+  const { updateAvailable, updateInfo } = useUpdateChecker() as { updateAvailable: boolean; updateInfo: any };
 
   // Notifications — not supported on web
   useEffect(() => {
@@ -359,7 +360,6 @@ function RootLayout() {
   const [clickCount, setClickCount] = useState(1);
   const [data, setData] = useState(sampleTopics);
 
-  // Global ecosystem states
   const [globalConfig, setGlobalConfig] = useState(defaultConfig);
   const [appsRegistry, setAppsRegistry] = useState(defaultApps);
   const [about, setAbout] = useState(defaultAbout);
@@ -370,6 +370,29 @@ function RootLayout() {
   // AI Credits & Ad-Free state
   const [aiCredits, setAiCredits] = useState(5);
   const [isAdFree, setIsAdFree] = useState(false);
+
+  const { config, loading } = useDestyaConfig();
+  
+  useEffect(() => {
+    if (!loading && config) {
+      setGlobalConfig(prev => ({
+        ...prev,
+        ...config,
+        legal: { ...prev.legal, ...config.legal }
+      }));
+      setAppsRegistry(config.crossPromoApps || defaultApps);
+      setAdConfig(prev => ({
+        ...prev,
+        showAds: !config.ads.globalKillSwitch,
+        showBannerAds: config.ads.banner.enabled,
+        showInterstitialAds: config.ads.interstitial.enabled,
+        showRewardedAds: config.ads.rewarded.enabled,
+        showAppOpenAd: config.ads.appOpen.enabled,
+        interstitialFrequency: config.ads.interstitial.frequency || prev.interstitialFrequency,
+        appOpenAdFrequency: config.ads.appOpen.frequency || prev.appOpenAdFrequency,
+      }));
+    }
+  }, [config, loading]);
 
   // ── Theme hooks (must be called before early returns) ──
   const themeValue = useMemo(() => ({ themePreference, setThemePreference }), [themePreference]);

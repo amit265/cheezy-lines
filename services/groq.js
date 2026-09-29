@@ -1,7 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const generateCheesyLine = async (prompt) => {
+export const generateCheesyLine = async (prompt, modelOverride) => {
   let apiKey = "";
   try {
     const customKey = await SecureStore.getItemAsync("ds_custom_groq_api_key");
@@ -34,7 +34,7 @@ Keep it extremely short, punchy, and under 20 words.
 Do NOT include hashtags, emojis, or explanations. Just the pickup line itself.`;
 
   // Verified active chat models mapped specifically to your API key's permissions
-  const fallbackModels = [
+  const fallbackModels = modelOverride ? [modelOverride] : [
     "openai/gpt-oss-20b",
     "qwen/qwen3.8-27b",
     "groq/compound"

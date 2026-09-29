@@ -44,7 +44,7 @@ export default function CrossPromoHub() {
   const { logEvent } = useAnalytics();
   const colors = useThemeColors();
 
-  const handleAppPress = async (app) => {
+  const handleAppPress = async (app: any) => {
     try {
       const url = Platform.OS === 'ios' ? app.iosUrl : app.androidUrl;
       await Linking.openURL(url);

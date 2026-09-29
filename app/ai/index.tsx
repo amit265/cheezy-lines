@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { useContext, useState, useEffect, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -12,11 +13,8 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
-  Share,
   ScrollView,
-  Alert,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { captureRef } from "react-native-view-shot";
@@ -24,8 +22,6 @@ import RNShare from "../../components/ShareProxy";
 import ShareCard from "../../components/ShareCard";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CustomAlert from "../../components/CustomAlert";
-import DynamicBackground from "../../components/DynamicBackground";
-import { BlurView } from "expo-blur";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -37,30 +33,33 @@ import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { useThemeColors } from "../../constants/colors";
-import { favoritesContext, aiCreditsContext } from "../../context/AppContext";
+import { favoritesContext, aiCreditsContext, globalConfigContext } from "../../context/AppContext";
 import { generateCheesyLine } from "../../services/groq";
 import { getRandomOfflineLine } from "../../services/offlineAILines";
 import { BannerAdComponent } from "../../services/AdManager";
 import { AI_PROMPT_SUGGESTIONS } from "../../constants/aiPrompts";
 
+const ShareCardComp = ShareCard as any;
+
 export default function AIGenerator() {
   const router = useRouter();
   const { setFavorites } = useContext(favoritesContext);
   const { aiCredits, setAiCredits } = useContext(aiCreditsContext);
+  const { globalConfig } = useContext(globalConfigContext);
   const colors = useThemeColors();
 
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
-  const [generatedLine, setGeneratedLine] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
+  const [generatedLine, setGeneratedLine] = useState<any>(null);
+  const [errorMsg, setErrorMsg] = useState<any>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [hasCustomKey, setHasCustomKey] = useState(false);
-  const [alertConfig, setAlertConfig] = useState(null);
+  const [alertConfig, setAlertConfig] = useState<any>(null);
   
-  const shareCardRef = useRef();
+  const shareCardRef = useRef<any>(null);
 
   useEffect(() => {
     // Check if user has a custom API key for unlimited generation
@@ -119,7 +118,7 @@ export default function AIGenerator() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      const line = await generateCheesyLine(prompt);
+      const line = await generateCheesyLine(prompt, globalConfig?.ai?.model);
       setGeneratedLine(line);
       
       if (!hasCustomKey) {
@@ -129,7 +128,7 @@ export default function AIGenerator() {
       }
       
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (error) {
+    } catch (error: any) {
       if (error.message === "NO_API_KEY") {
         // Fallback to offline template
         const offlineLine = getRandomOfflineLine();
@@ -155,7 +154,7 @@ export default function AIGenerator() {
       };
       const existingData = await AsyncStorage.getItem("favorites");
       let favorites = existingData ? JSON.parse(existingData) : [];
-      const isDuplicate = favorites.some((fav) => fav.text === newCard.text);
+      const isDuplicate = favorites.some((fav: any) => fav.text === newCard.text);
 
       if (!isDuplicate) {
         favorites.push(newCard);
@@ -509,7 +508,7 @@ export default function AIGenerator() {
             {/* Result Card */}
             {generatedLine && (
               <View style={styles.gradientBorderContainer}>
-                <ShareCard ref={shareCardRef} text={generatedLine} />
+                <ShareCardComp ref={shareCardRef} text={generatedLine} />
                 <View style={styles.resultCard}>
                   <TouchableOpacity 
                     style={{ position: 'absolute', top: 15, right: 15, padding: 5, zIndex: 10 }} 
