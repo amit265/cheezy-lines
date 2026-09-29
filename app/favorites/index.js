@@ -163,16 +163,37 @@ export default function Index() {
   const emptyStateFade = useSharedValue(0);
   const emptyStateScale = useSharedValue(0.8);
 
-  // --- ON LOAD ANIMATION ---
+  // --- ON MOUNT LOAD & ANIMATION ---
   useEffect(() => {
     headerFade.value = withTiming(1, { duration: 500 });
     headerSlide.value = withSpring(0, { damping: 6, stiffness: 40 });
+
+    const loadFavs = async () => {
+      try {
+        const storedFavs1 = await AsyncStorage.getItem("FAVORITE_LINES");
+        const storedFavs2 = await AsyncStorage.getItem("favorites");
+        let parsedFavs = [];
+        if (storedFavs1) parsedFavs = JSON.parse(storedFavs1);
+        if (storedFavs2) {
+          const parsedFavs2 = JSON.parse(storedFavs2);
+          parsedFavs2.forEach((item) => {
+            if (!parsedFavs.some((f) => f.id === item.id || f.text === item.text)) {
+              parsedFavs.push(item);
+            }
+          });
+        }
+        if (parsedFavs.length > 0) {
+          setFavorites(parsedFavs);
+        }
+      } catch (err) {}
+    };
+    loadFavs();
 
     if (favorites?.length === 0) {
       emptyStateFade.value = withTiming(1, { duration: 800 });
       emptyStateScale.value = withSpring(1, { damping: 5, stiffness: 100 });
     }
-  }, [favorites?.length, headerFade, headerSlide, emptyStateFade, emptyStateScale]);
+  }, [favorites?.length, headerFade, headerSlide, emptyStateFade, emptyStateScale, setFavorites]);
 
   // --- INTERACTION HANDLERS ---
   const handleBackPressIn = () => {
@@ -190,10 +211,19 @@ export default function Index() {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      const storedFavorites = await AsyncStorage.getItem("FAVORITE_LINES");
-      if (storedFavorites) {
-        setFavorites(JSON.parse(storedFavorites));
+      const storedFavs1 = await AsyncStorage.getItem("FAVORITE_LINES");
+      const storedFavs2 = await AsyncStorage.getItem("favorites");
+      let parsedFavs = [];
+      if (storedFavs1) parsedFavs = JSON.parse(storedFavs1);
+      if (storedFavs2) {
+        const parsedFavs2 = JSON.parse(storedFavs2);
+        parsedFavs2.forEach((item) => {
+          if (!parsedFavs.some((f) => f.id === item.id || f.text === item.text)) {
+            parsedFavs.push(item);
+          }
+        });
       }
+      setFavorites(parsedFavs);
     } catch (err) {}
     setTimeout(() => {
       setRefreshing(false);

@@ -356,7 +356,7 @@ function RootLayout() {
   });
   const [dbUpdate, setUpdate] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
-  const [favorites, setFavorites] = useState([]);
+  const [favorites, setFavorites] = useState<any[]>([]);
   const [clickCount, setClickCount] = useState(1);
   const [data, setData] = useState(sampleTopics);
 
@@ -498,6 +498,30 @@ function RootLayout() {
           }
         }
 
+        // Favorites (Load & Migrate legacy keys)
+        try {
+          const storedFavs1 = await AsyncStorage.getItem("FAVORITE_LINES");
+          const storedFavs2 = await AsyncStorage.getItem("favorites");
+          let parsedFavs: any[] = [];
+          if (storedFavs1) {
+            parsedFavs = JSON.parse(storedFavs1);
+          }
+          if (storedFavs2) {
+            const parsedFavs2 = JSON.parse(storedFavs2);
+            parsedFavs2.forEach((item: any) => {
+              if (!parsedFavs.some((f: any) => f.id === item.id || f.text === item.text)) {
+                parsedFavs.push(item);
+              }
+            });
+          }
+          if (parsedFavs.length > 0) {
+            setFavorites(parsedFavs);
+            await AsyncStorage.setItem("FAVORITE_LINES", JSON.stringify(parsedFavs));
+          }
+        } catch (e) {
+          console.error("Error loading favorites on startup", e);
+        }
+
         // AI Credits logic (refill 5 daily)
         const storedCreditsStr = await AsyncStorage.getItem("ds_ai_credits");
         let currentCredits = storedCreditsStr !== null ? parseInt(storedCreditsStr, 10) : 5;
@@ -565,9 +589,9 @@ function RootLayout() {
       onError={(error) => Sentry.captureException(error)}
     >
       <StatusBar
-        backgroundColor={colors.BACKGROUND}
+        translucent
+        backgroundColor="transparent"
         barStyle={isDark ? "light-content" : "dark-content"}
-        hidden={false}
       />
       {Platform.OS === "web" ? (
         <WebLayout values={contextValues} />

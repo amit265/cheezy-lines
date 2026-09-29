@@ -243,13 +243,13 @@ export default function SwipeDeck({ card }) {
 
   const saveToFavorites = async (cardItem) => {
     try {
-      const existingData = await AsyncStorage.getItem("favorites");
+      const existingData = await AsyncStorage.getItem("FAVORITE_LINES");
       let favorites = existingData ? JSON.parse(existingData) : [];
-      const isDuplicate = favorites.some((fav) => fav.text === cardItem.text);
+      const isDuplicate = favorites.some((fav) => fav.id === cardItem.id || fav.text === cardItem.text);
 
       if (!isDuplicate) {
         favorites.push(cardItem);
-        await AsyncStorage.setItem("favorites", JSON.stringify(favorites));
+        await AsyncStorage.setItem("FAVORITE_LINES", JSON.stringify(favorites));
         setFavorites(favorites);
       }
     } catch (error) {}

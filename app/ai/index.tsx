@@ -152,13 +152,13 @@ export default function AIGenerator() {
         id: Math.random().toString(36).substr(2, 9),
         text: generatedLine,
       };
-      const existingData = await AsyncStorage.getItem("favorites");
+      const existingData = await AsyncStorage.getItem("FAVORITE_LINES");
       let favorites = existingData ? JSON.parse(existingData) : [];
       const isDuplicate = favorites.some((fav: any) => fav.text === newCard.text);
 
       if (!isDuplicate) {
         favorites.push(newCard);
-        await AsyncStorage.setItem("favorites", JSON.stringify(favorites));
+        await AsyncStorage.setItem("FAVORITE_LINES", JSON.stringify(favorites));
         setFavorites(favorites);
       }
       setIsSaved(true);

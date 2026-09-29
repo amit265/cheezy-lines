@@ -317,17 +317,19 @@ export default function Settings() {
     if (key === "privacy") return Linking.openURL(`${globalConfig?.legal?.privacyBaseUrl}/cheezylines/privacy`);
     if (key === "terms") return Linking.openURL(`${globalConfig?.legal?.termsBaseUrl}/cheezylines/terms`);
     if (key === "reviews") {
-      StoreReview.requestReview().catch(() => {
-        if (Platform.OS === 'android') {
-          Linking.openURL("market://details?id=com.mindcraftlearning.cheezylines").catch(() => 
-            Linking.openURL("https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines")
-          );
-        } else {
-          Linking.openURL("https://apps.apple.com/app/id6811904095?action=write-review").catch(() => 
-            Linking.openURL(globalConfig?.socialLinks?.appStore || "https://destyastudio.com/products/cheezylines")
-          );
-        }
-      });
+      const playStoreMarketUrl = "market://details?id=com.mindcraftlearning.cheezylines";
+      const playStoreWebUrl = "https://play.google.com/store/apps/details?id=com.mindcraftlearning.cheezylines";
+      const appStoreUrl = "https://apps.apple.com/app/id6811904095?action=write-review";
+
+      if (Platform.OS === 'android') {
+        Linking.openURL(playStoreMarketUrl).catch(() => Linking.openURL(playStoreWebUrl));
+      } else if (Platform.OS === 'ios') {
+        Linking.openURL(appStoreUrl).catch(() => 
+          Linking.openURL(globalConfig?.socialLinks?.appStore || "https://destyastudio.com/products/cheezylines")
+        );
+      } else {
+        Linking.openURL(playStoreWebUrl);
+      }
       return;
     }
   };
