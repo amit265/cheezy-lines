@@ -22,7 +22,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import CrossPromoHub from "../components/CrossPromoHub";
 import CustomAlert from "../components/CustomAlert";
 import { useThemeColors } from "../constants/colors";
-import { BannerAdComponent, showRewardedAd, getAdUnitId } from "../services/AdManager";
+import { BannerAdComponent, showRewardedAd } from "../services/AdManager";
 import { globalConfigContext, themeContext, adConfigContext, aiCreditsContext, adFreeContext } from "../context/AppContext";
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";

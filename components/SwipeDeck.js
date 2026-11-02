@@ -6,12 +6,10 @@ import { useContext, useEffect, useRef, useState, useMemo } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Animated, // Import Animated
-  Pressable, // Import Pressable for better touch handling
+  Animated,
+  Pressable,
   StyleSheet,
   Text,
-  TouchableOpacity,
-  Platform,
   useWindowDimensions,
   View,
 } from "react-native";
@@ -21,7 +19,6 @@ import * as StoreReview from "expo-store-review";
 import Feather from "@expo/vector-icons/Feather";
 import Swiper from "react-native-deck-swiper";
 import { captureRef } from "react-native-view-shot";
-import { BlurView } from "expo-blur";
 import { useThemeColors } from "../constants/colors";
 import { shareCaptions } from "../constants/constant";
 import { favoritesContext, adConfigContext, adFreeContext } from "../context/AppContext";

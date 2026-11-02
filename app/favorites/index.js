@@ -13,7 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import LineCard from "../../components/LineCard";
 import { useThemeColors } from "../../constants/colors";
-import { favoritesContext, adConfigContext } from "../../context/AppContext";
+import { favoritesContext } from "../../context/AppContext";
 import { BannerAdComponent } from "../../services/AdManager";
 import Animated, {
   useSharedValue,
@@ -50,7 +50,6 @@ const AnimatedItem = ({ children, index }) => {
 export default function Index() {
   const router = useRouter();
   const { favorites, setFavorites } = useContext(favoritesContext);
-  const { adConfig } = useContext(adConfigContext);
   const colors = useThemeColors();
   const [refreshing, setRefreshing] = useState(false);
 

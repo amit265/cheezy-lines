@@ -1,9 +1,8 @@
-import colors from "@/constants/colors";
 import { adConfigContext, dataContext, favoritesContext, adFreeContext } from "@/context/AppContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SplashScreen } from "expo-router";
 import { useContext, useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DynamicBackground from "../components/DynamicBackground";
 import Header from "../components/Header";
@@ -13,10 +12,10 @@ import { BannerAdComponent, showInterstitialAd } from "../services/AdManager";
 
 export default function Index() {
   const [showSplash, setShowSplash] = useState(true);
-  const { adConfig, setAdConfig, clickCount } = useContext(adConfigContext);
+  const { adConfig, clickCount } = useContext(adConfigContext);
   const { isAdFree } = useContext(adFreeContext);
-  const { data, setData } = useContext(dataContext);
-  const { favorites, setFavorites } = useContext(favoritesContext);
+  const { data } = useContext(dataContext);
+  const { setFavorites } = useContext(favoritesContext);
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
