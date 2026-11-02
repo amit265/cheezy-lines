@@ -211,24 +211,19 @@ export const showRewardedAd = (adConfig, onReward, onAdFreeUnlock) => {
 export const BannerAdComponent = () => {
   const { adConfig } = useContext(adConfigContext);
   const { isAdFree } = useContext(adFreeContext);
+  const [hasError, setHasError] = useState(false);
 
-  const [isAdLoaded, setIsAdLoaded] = useState(false);
-
-  if (!adConfig.showBannerAds) return null;
+  if (isAdFree || !adConfig?.showBannerAds || hasError) return null;
 
   return (
-    <View
-      style={
-        isAdLoaded
-          ? { opacity: 1 }
-          : { opacity: 0, position: "absolute", top: -1000 }
-      }
-    >
+    <View style={{ alignItems: "center", justifyContent: "center", width: "100%" }}>
       <BannerAd
-        unitId={getAdUnitId("banner", adConfig.testAds)}
+        unitId={getAdUnitId("banner", adConfig?.testAds)}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-        onAdLoaded={() => setIsAdLoaded(true)}
-        onAdFailedToLoad={(error) => console.error("Banner Ad Error:", error)}
+        onAdFailedToLoad={(error) => {
+          console.warn("Banner Ad Error:", error);
+          setHasError(true);
+        }}
       />
     </View>
   );

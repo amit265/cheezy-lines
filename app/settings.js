@@ -23,7 +23,6 @@ import CrossPromoHub from "../components/CrossPromoHub";
 import CustomAlert from "../components/CustomAlert";
 import { useThemeColors } from "../constants/colors";
 import { BannerAdComponent, showRewardedAd, getAdUnitId } from "../services/AdManager";
-import InlineNativeAd from "../components/InlineNativeAd";
 import { globalConfigContext, themeContext, adConfigContext, aiCreditsContext, adFreeContext } from "../context/AppContext";
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -505,10 +504,7 @@ export default function Settings() {
             </View>
           </View>
 
-          {/* Settings Inline Native Ad */}
-          {adConfig?.showBannerAds && (
-            <InlineNativeAd adConfig={adConfig} containerStyle={{ marginBottom: 20 }} />
-          )}
+
 
           {/* Support and About */}
           <View style={styles.panel}>

@@ -349,9 +349,8 @@ To balance effective monetization with a premium user experience, follow these g
 - **Effectiveness:** Low CPM, but consistent impressions.
 - **Placement:** Anchor banner ads to the absolute bottom of the screen above the tab bar, or top of non-intrusive screens. Never place them near interactive buttons where accidental clicks can occur, as this violates policy.
 
-### D. Ad Layout & Spacing (Native & Banner)
-- **Constraint:** Ad components (both Native and Banner) must only occupy screen space if they successfully load.
-- **Implementation:** Track the ad loading state (`isAdLoaded`) and apply styling conditionally so the container has `opacity: 0` and `height: 0` (or returns `null`) until the ad successfully loads, ensuring no empty padding or background color remains visible on the screen.
+- **Constraint:** Ad components must never be rendered in offscreen containers (`top: -1000`) or hidden states (`opacity: 0`), as this triggers AdMob's "Modified ad behavior" policy violation.
+- **Implementation:** Center-align the banner container in standard flow. If the ad fails to load (`onAdFailedToLoad`), cleanly unmount the container (`return null`) to prevent empty space.
 
 ---
 

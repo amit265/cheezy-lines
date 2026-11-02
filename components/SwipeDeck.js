@@ -24,63 +24,10 @@ import { captureRef } from "react-native-view-shot";
 import { BlurView } from "expo-blur";
 import { useThemeColors } from "../constants/colors";
 import { shareCaptions } from "../constants/constant";
-import { favoritesContext, adConfigContext } from "../context/AppContext";
+import { favoritesContext, adConfigContext, adFreeContext } from "../context/AppContext";
 import { shuffleArray } from "../utils/shuffleQuestion";
 import ShareCard from "./ShareCard";
-import { getAdUnitId } from "../services/AdManager";
-import { BannerAd, BannerAdSize } from "./NativeBannerAd";
-
-// --- SUB-COMPONENT: Ad Card (only renders when ad is loaded) ---
-const AdCard = ({ unitId, isTopCard, colors }) => {
-  const [adLoaded, setAdLoaded] = useState(false);
-  const [adFailed, setAdFailed] = useState(false);
-
-  // If ad failed to load, render nothing (invisible card)
-  if (adFailed) {
-    return <View style={{ width: 0, height: 0 }} />;
-  }
-
-  return (
-    <View style={[
-      stylesAdCard(colors).card,
-      { justifyContent: "center", alignItems: "center" },
-      !adLoaded && { opacity: 0 },
-    ]}>
-      {adLoaded && isTopCard && (
-        <Text style={{ fontFamily: "Poppins-Bold", color: "rgba(255,255,255,0.5)", fontSize: 11, marginBottom: 10 }}>
-          Sponsored
-        </Text>
-      )}
-      <View style={{ opacity: isTopCard ? 1 : 0 }}>
-        <BannerAd
-          unitId={unitId}
-          size={BannerAdSize.MEDIUM_RECTANGLE}
-          onAdLoaded={() => setAdLoaded(true)}
-          onAdFailedToLoad={() => setAdFailed(true)}
-        />
-      </View>
-    </View>
-  );
-};
-
-const stylesAdCard = (colors) => StyleSheet.create({
-  card: {
-    flex: 0.65,
-    borderRadius: 30,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.CARD_BORDER,
-    backgroundColor: colors.CARD_BG,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 30,
-    overflow: "hidden", 
-    elevation: colors.isDark ? 0 : 10,
-    shadowColor: colors.isDark ? "transparent" : colors.SHADOW,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: colors.isDark ? 0 : 0.5,
-    shadowRadius: 15,
-  }
-});
+import { showInterstitialAd } from "../services/AdManager";
 
 // --- SUB-COMPONENT: Reusable Bouncy Button ---
 const BouncyButton = ({ onPress, style, children, disabled }) => {
@@ -123,6 +70,7 @@ export default function SwipeDeck({ card }) {
   const navigation = useNavigation();
   const { setFavorites } = useContext(favoritesContext);
   const { adConfig } = useContext(adConfigContext);
+  const { isAdFree } = useContext(adFreeContext);
   const shareCardRef = useRef();
   const [currentIndex, setCurrentIndex] = useState(0);
   const { width } = useWindowDimensions();
@@ -135,18 +83,8 @@ export default function SwipeDeck({ card }) {
   const shareMessage = shuffleArray(shareCaptions);
   const colors = useThemeColors();
 
-  // --- COMPUTE CARDS WITH ADS ---
-  const cardsWithAds = useMemo(() => {
-    if (!card || card.length === 0) return [];
-    const newCards = [];
-    card.forEach((c, index) => {
-      newCards.push(c);
-      // Inject an ad every 6 cards (after index 5)
-      if ((index + 1) % 6 === 0 && index !== card.length - 1) {
-        newCards.push({ id: `ad-${index}`, isAd: true });
-      }
-    });
-    return newCards;
+  const cards = useMemo(() => {
+    return card || [];
   }, [card]);
 
   // --- ANIMATION REFS ---
@@ -193,10 +131,9 @@ export default function SwipeDeck({ card }) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsSharing(true);
     
-    const currentCard = cardsWithAds[currentIndex];
-    if (!currentCard || currentCard.isAd) {
+    const currentCard = cards[currentIndex];
+    if (!currentCard) {
       setIsSharing(false);
-      Alert.alert("Oops", "You cannot share an ad!");
       return;
     }
 
@@ -227,8 +164,8 @@ export default function SwipeDeck({ card }) {
 
   const handleCardIndexChange = async (index) => {
     setCurrentIndex(index);
-    if (cardsWithAds[index] && !cardsWithAds[index].isAd) {
-      setCurrentCardText(cardsWithAds[index].text);
+    if (cards[index]) {
+      setCurrentCardText(cards[index].text);
     }
     
     // Request Store Review after 15 swipes
@@ -259,18 +196,6 @@ export default function SwipeDeck({ card }) {
     if (!cardItem) return <View style={styles.card} />;
     
     const isTopCard = index === currentIndex;
-
-    if (cardItem.isAd) {
-      // Only render the ad card once the ad is confirmed loaded
-      return (
-        <AdCard
-          unitId={getAdUnitId("banner", adConfig?.testAds)}
-          isTopCard={isTopCard}
-          colors={colors}
-        />
-      );
-    }
-
     const actualCardIndex = card.indexOf(cardItem) + 1;
 
     return (
@@ -295,6 +220,9 @@ export default function SwipeDeck({ card }) {
 
   const handleSwipedAll = () => {
     setIsEndOfDeck(true);
+    if (!isAdFree && adConfig?.showInterstitialAds) {
+      showInterstitialAd(adConfig, isAdFree);
+    }
   };
 
   const handleRestart = () => {
@@ -487,12 +415,12 @@ export default function SwipeDeck({ card }) {
         <Swiper
           key={deckKey}
           ref={swiperRef}
-          cards={cardsWithAds}
+          cards={cards}
           renderCard={renderCard}
           onSwipedRight={(cardIndex) => {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            const likedCard = cardsWithAds[cardIndex];
-            if (likedCard && !likedCard.isAd) {
+            const likedCard = cards[cardIndex];
+            if (likedCard) {
               saveToFavorites(likedCard);
             }
           }}

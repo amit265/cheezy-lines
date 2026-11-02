@@ -1,5 +1,5 @@
 import colors from "@/constants/colors";
-import { adConfigContext, dataContext, favoritesContext } from "@/context/AppContext";
+import { adConfigContext, dataContext, favoritesContext, adFreeContext } from "@/context/AppContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SplashScreen } from "expo-router";
 import { useContext, useEffect, useState } from "react";
@@ -14,6 +14,7 @@ import { BannerAdComponent, showInterstitialAd } from "../services/AdManager";
 export default function Index() {
   const [showSplash, setShowSplash] = useState(true);
   const { adConfig, setAdConfig, clickCount } = useContext(adConfigContext);
+  const { isAdFree } = useContext(adFreeContext);
   const { data, setData } = useContext(dataContext);
   const { favorites, setFavorites } = useContext(favoritesContext);
   const [refreshing, setRefreshing] = useState(false);
@@ -61,10 +62,10 @@ export default function Index() {
   }, []);
 
   useEffect(() => {
-    if (clickCount % adConfig?.interstitialFrequency === 0) {
-      showInterstitialAd(adConfig);
+    if (clickCount > 0 && clickCount % (adConfig?.interstitialFrequency || 5) === 0) {
+      showInterstitialAd(adConfig, isAdFree);
     }
-  }, [clickCount, adConfig]);
+  }, [clickCount, adConfig, isAdFree]);
 
   if (showSplash) {
     return <SplashScreenComponent />;

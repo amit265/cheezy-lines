@@ -15,7 +15,6 @@ import LineCard from "../../components/LineCard";
 import { useThemeColors } from "../../constants/colors";
 import { favoritesContext, adConfigContext } from "../../context/AppContext";
 import { BannerAdComponent } from "../../services/AdManager";
-import InlineNativeAd from "../../components/InlineNativeAd";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -141,18 +140,7 @@ export default function Index() {
     },
   }), [colors]);
 
-  const favoritesWithAds = useMemo(() => {
-    if (!favorites || favorites.length === 0) return [];
-    const newFavs = [];
-    favorites.forEach((fav, index) => {
-      newFavs.push(fav);
-      // Inject an ad every 5 favorites
-      if ((index + 1) % 5 === 0 && index !== favorites.length - 1) {
-        newFavs.push({ id: `ad-${index}`, isAd: true });
-      }
-    });
-    return newFavs;
-  }, [favorites]);
+
 
   // --- HEADER ANIMATION STATE ---
   const headerSlide = useSharedValue(-50);
@@ -231,14 +219,6 @@ export default function Index() {
   };
 
   const renderItem = ({ item, index }) => {
-    if (item.isAd) {
-      return (
-        <AnimatedItem index={index}>
-          <InlineNativeAd adConfig={adConfig} containerStyle={{ margin: 16 }} />
-        </AnimatedItem>
-      );
-    }
-
     return (
       <AnimatedItem index={index}>
         <View>
@@ -299,7 +279,7 @@ export default function Index() {
       ) : (
         <View style={{ flex: 1, width: "100%" }}>
           <FlashList
-            data={favoritesWithAds}
+            data={favorites}
             renderItem={renderItem}
             keyExtractor={(item, index) => `${item?.id}-${index}`}
             contentContainerStyle={{ paddingBottom: 60 }}

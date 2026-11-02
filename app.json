@@ -2,7 +2,7 @@
   "expo": {
     "name": "Cheezy Lines",
     "slug": "cheezy-lines",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "cheezylines",
@@ -25,7 +25,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.mindcraftlearning.cheezylines",
-      "versionCode": 10,
+      "versionCode": 11,
       "googleServicesFile": "./google-services.json",
       "intentFilters": [
         {
